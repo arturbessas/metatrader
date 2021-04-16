@@ -61,6 +61,10 @@ bool validStrategy = true;
 ulong entryOrder = 0;
 bool lockEntries = false;
 datetime entryTime;
+int lastMonth;
+bool above = true;
+bool lockEntriesByLoss = false;
+double optResult = 0.0;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -75,10 +79,20 @@ int OnInit()
 	if (validStrategy && increasesPtsStr == "")
 		validStrategy = reprocessIncreases();
 
-	if (!validStrategy)
-		ExpertRemove();
+	//if(!validStrategy)
+	//ExpertRemove();
+
+	TimeToStruct(TimeCurrent(), tempo);
+	lastMonth = tempo.mon;
 
 	return (INIT_SUCCEEDED);
+}
+
+double OnTester()
+{
+	if (TesterStatistics(STAT_PROFIT) == 0)
+		return -100;
+	return optResult + 0.00001 * TesterStatistics(STAT_PROFIT);
 }
 
 void OnDeinit(const int reason)
@@ -87,10 +101,13 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
-	if (!validTick() || !validStrategy)
+	if (!validStrategy)
 		return;
 
 	getMedia();
+
+	if (!validTick() || !validStrategy)
+		return;
 
 	//regra de entrada
 	if (!posManager.Select(stock) && !isEntryLocked())
@@ -200,7 +217,14 @@ bool isEntryLocked()
 		}
 	}
 
-	return lockEntries;
+	bool currentlyAbove;
+	if (lockEntriesByLoss)
+	{
+		currentlyAbove = iClose(stock, PERIOD_CURRENT, 0) > media;
+		lockEntriesByLoss = currentlyAbove == above;
+	}
+
+	return lockEntries || lockEntriesByLoss;
 }
 
 string getSignal()
@@ -231,6 +255,12 @@ bool validTick()
 		checkStopLoss();
 
 	TimeToStruct(tick.time, tempo);
+
+	if (tempo.mon != lastMonth)
+	{
+		checkMonthlyProfit();
+		lastMonth = tempo.mon;
+	}
 
 	if (tempo.hour < 9)
 	{
@@ -268,11 +298,13 @@ bool validTick()
 
 void checkStopLoss()
 {
-	if (opType == "buy" && tick.last <= entryPrice - stopLoss || opType == "sell" && tick.last >= entryPrice + stopLoss)
+	if ((opType == "buy" && tick.last <= entryPrice - stopLoss) || (opType == "sell" && tick.last >= entryPrice + stopLoss))
 	{
 		trade.PositionClose(stock);
 		cancelStopGain();
 		cancelIncreaseOrder();
+		lockEntriesByLoss = true;
+		above = tick.last > media;
 	}
 }
 
@@ -317,12 +349,17 @@ bool reprocessIncreases()
 	}
 
 	increaseNumber = ArraySize(increasesPts);
+	int stocks = increasesQtt[0] + 1;
 
 	for (i = 1; i < increaseNumber; i++)
 	{
 		if (increasesPts[i] <= increasesPts[i - 1])
 			return false;
+		stocks += increasesQtt[i];
 	}
+
+	if (increasesPts[increaseNumber - 1] >= stopLoss || stocks > 100)
+		return false;
 
 	return true;
 }
@@ -355,6 +392,33 @@ bool processIncreases()
 		return false;
 
 	return true;
+}
+
+void checkMonthlyProfit()
+{
+	int year = lastMonth == 12 ? tempo.year - 1 : tempo.year;
+	datetime ini = StringToTime(StringFormat("%d.%d.01 06:00:00", year, lastMonth));
+	datetime fin = StringToTime(StringFormat("%d.%d.01 06:00:00", tempo.year, tempo.mon));
+
+	HistorySelect(ini, fin);
+	ulong auxTicket;
+	double result = 0;
+
+	for (i = 0; i < HistoryDealsTotal(); i++)
+	{
+		auxTicket = HistoryDealGetTicket(i);
+		result += HistoryDealGetDouble(auxTicket, DEAL_PROFIT);
+	}
+
+	if (result < 0)
+	{
+		optResult -= 100.0;
+		ExpertRemove();
+	}
+	else
+	{
+		optResult += 1.0;
+	}
 }
 
 void add(int &v[], int x)

@@ -358,8 +358,9 @@ bool reprocessIncreases()
 		stocks += increasesQtt[i];
 	}
 
-	if (increasesPts[increaseNumber - 1] >= stopLoss || stocks > 100)
-		return false;
+	if (increaseNumber)
+		if (increasesPts[increaseNumber - 1] >= stopLoss || stocks > 100)
+			return false;
 
 	return true;
 }

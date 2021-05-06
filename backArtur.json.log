@@ -1,0 +1,457 @@
+2021-04-12 14:53:48 [/home/backtest_flavio/optimizer/json/backArtur.json] Base URL: https://app.smarttbot.com/
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] User information:{"natural_person_or_legal_person":"0","name_or_corporate_name":"Artur Gontijo Bessas Fonseca","gender":"M","document":"07024085657","email":"arturbessas@gmail.com","address":"Rua Doutor Francisco Queiroz","number":"245","complement":null,"neighborhood":"Industrial","postal_code":"32235370","city":"Contagem","state":"MG","country":null,"birthday":"1996-01-28","main_phone":"31994049379","secondary_phone":null,"company":null,"registration_datetime":"2017-08-10T18:34:47.000Z","last_password_update_datetime":"2021-03-29T15:03:09.000Z","license_type":"cecas","license_expiration_date":"2099-12-31","registration_ip":"177.206.47.164","plan":"expert_semiannual","s10i_login":"arturbessas","host_priority":null,"preferences":null,"admin":null,"validation":null,"login_errors":0,"extra_data":{"user_onboarding_instances":"2018-11-19T13:12:56.120Z","user_onboarding_login":"2018-11-19T18:21:08.349Z","user_onboarding_backtests":"2018-12-01T18:02:16.821Z","user_onboarding_store":"2018-12-17T21:07:19.297Z","si_investor_profile":{"id":5,"profile":"Muito arrojado","answers":{"1":"E","2":"D","3":"D","4":"D"}}},"max_instances":10000,"plans":[{"platform_id":1000,"platform_name":"SmarttBot","platform_brokerage_id":1000,"plan_code":"expert_semiannual","is_paid":true,"max_running_instances":15,"backtest_running_limit":6,"backtest_limit":0,"is_smarttinvest":false},{"platform_id":5900,"platform_name":"SmarttInvest","platform_brokerage_id":1000,"plan_code":"free_si","is_paid":false,"max_running_instances":1,"backtest_running_limit":1,"backtest_limit":0,"is_smarttinvest":true}],"max_running_instances":15,"backtest_running_limit":6,"backtest_limit":0,"backtests_quantity":491}
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] Base_params not found in JSON parameters, trying to download from robot_id: 2327552
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] {
+    "costs": "setup_20191128-183637",
+    "initial_capital": 2000,
+    "optimization": {
+        "keys": [
+            {
+                "BBRULE_invert": [
+                    "true",
+                    "false"
+                ],
+                "BB_multiplier": [
+                    "1.70"
+                ],
+                "BB_periods": [
+                    "5"
+                ],
+                "BBindicator_using": [
+                    "true"
+                ],
+                "CMAindicator_using": [
+                    "false"
+                ],
+                "DAYTRADE_elim_time": [
+                    "17:50:00"
+                ],
+                "LASTTIMEBLOCK_enabled": [
+                    "true"
+                ],
+                "POS_activeReversions": [
+                    "false"
+                ],
+                "SG_stopGainDiff": [
+                    "5.00"
+                ],
+                "SL_stopLossDiff": [
+                    "18.00"
+                ],
+                "periodicity": [
+                    "2"
+                ],
+                "stockCode": [
+                    "WDO%"
+                ],
+                "typeBB": [
+                    "entry_only",
+                    "both"
+                ],
+                "usingBlockEntry": [
+                    "false"
+                ],
+                "usingLimitStopGain": [
+                    "True"
+                ]
+            }
+        ],
+        "start_end_dates": [
+            [
+                "2018-01-01T00:00:00.000Z",
+                "2021-04-11T00:00:00.000Z"
+            ]
+        ]
+    },
+    "robot_id": [
+        2327552
+    ],
+    "sqlite": "./db.sqlite3",
+    "user": "arturbessas"
+}
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] Starting optimization engine, json:
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] Openning SQLITE3 Database: ./db.sqlite3
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] OperationalError('table `backtests` already exists')
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] Starting backtests
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] {
+    "base_params": {
+        "ADXCOMPMAX_value": "25",
+        "ADXCOMPMIN_value": "25",
+        "ADXRULE_invert": "false",
+        "ADXRULE_isFilter": "True",
+        "ADX_periods": "14",
+        "ADX_smooth": "14",
+        "ADXindicator_using": "false",
+        "ATRRULE_invert": "false",
+        "ATRRULE_isFilter": "False",
+        "ATR_average_type": "simples",
+        "ATR_multiplier": "2.00",
+        "ATR_periods": "6",
+        "ATRindicator_using": "false",
+        "BBRULE_invert": "true",
+        "BBRULE_isFilter": "True",
+        "BB_multiplier": "1.70",
+        "BB_periods": "5",
+        "BBindicator_using": "true",
+        "BREAKEVEN_using": "false",
+        "CMARULE_invert": "false",
+        "CMARULE_isFilter": "False",
+        "CMAindicator_using": "false",
+        "DAILYBREAKEVEN_activation_value": "30.00",
+        "DAILYBREAKEVEN_distance": "10.00",
+        "DAILYBREAKEVEN_enabled": "false",
+        "DAILYSTOPS_globalStopGain": "",
+        "DAILYSTOPS_globalStopLoss": "",
+        "DAILYSTOPS_usingGlobalStopGain": "false",
+        "DAILYSTOPS_usingGlobalStopLoss": "false",
+        "DAYTRADE_elim_time": "17:50:00",
+        "DAYTRADE_enabled": "true",
+        "FIRSTTIMEBLOCK_enabled": "false",
+        "FIRSTTIMEBLOCK_time": "09:00:00",
+        "HEIKIN_smoothed": "false",
+        "HEIKIN_smoothingAverageType": "2",
+        "HEIKIN_smoothingPeriods": "3",
+        "HILOLIMIT_limit": "0",
+        "HILORULE_invert": "false",
+        "HILORULE_isFilter": "False",
+        "HILO_periods": "9",
+        "HILOindicator_using": "false",
+        "LASTTIMEBLOCK_enabled": "true",
+        "LASTTIMEBLOCK_time": "16:30:00",
+        "LIMIT_execution_timeout": "60",
+        "LIMIT_execution_timeout_action": "CANCEL",
+        "LIMIT_spread": "1.5",
+        "LONGMADX_dx": "0",
+        "LONGMA_periods": "40",
+        "LONGMA_usingSMA": "True",
+        "MACDFILTER_value": "0",
+        "MACDRULE_invert": "false",
+        "MACDRULE_isFilter": "False",
+        "MACD_periodsDiff": "9",
+        "MACD_periodsLong": "26",
+        "MACD_periodsShort": "12",
+        "MACD_usingEMA": "False",
+        "MACDindicator_using": "false",
+        "MARTINGALE_maxTrades": "1",
+        "MARTINGALE_usingModule": "false",
+        "OBJBB_object_usage_info": "close",
+        "OBJLONGMA_object_usage_info": "close",
+        "OBJMACD_object_usage_info": "close",
+        "OBJRSI_object_usage_info": "close",
+        "OBJSHORTMA_object_usage_info": "close",
+        "PARTIALSG_numberOfStocks": "1",
+        "PARTIALSG_numberOfStocksType": "A",
+        "PARTIALSG_stopGainDiff": "50.00",
+        "PARTIALSG_stopGainType": "A",
+        "PARTIALSG_usingStop": "false",
+        "POS_activeReversions": "false",
+        "POS_numberOfStocksToTrade": "1",
+        "POS_quantity_capital": "10000.00",
+        "POS_quantity_type": "FIXED",
+        "RENKO_gap": "100.00",
+        "RENKO_tradesCount": "1",
+        "RENKO_usingCandlesEvent": "False",
+        "RSIRULEHIGHLEVEL_value": "80",
+        "RSIRULELOWLEVEL_value": "20",
+        "RSIRULE_invert": "false",
+        "RSIRULE_isFilter": "True",
+        "RSI_periods": "14",
+        "RSIindicator_using": "false",
+        "SARRULE_invert": "false",
+        "SARRULE_isFilter": "False",
+        "SAR_alpha": "0.02",
+        "SAR_increment": "0.02",
+        "SAR_limit": "1",
+        "SAR_max_alpha": "0.20",
+        "SARindicator_using": "false",
+        "SG_stopGainDiff": "5.00",
+        "SG_stopGainType": "A",
+        "SG_usingStop": "true",
+        "SHORTMADX_dx": "0",
+        "SHORTMA_periods": "9",
+        "SHORTMA_usingSMA": "False",
+        "SL_stopLossDiff": "18.00",
+        "SL_stopLossType": "A",
+        "SL_usingStop": "true",
+        "SM_stopMovelBegin": "150.00",
+        "SM_stopMovelDistance": "50.00",
+        "SM_stopMovelType": "A",
+        "SM_usingStop": "false",
+        "STOCHFILTERHIGH_value": "80",
+        "STOCHFILTERLOW_value": "20",
+        "STOCHFILTER_usingLevelsFilter": "false",
+        "STOCHRULE_invert": "false",
+        "STOCHRULE_isFilter": "True",
+        "STOCH_dPeriods": "3",
+        "STOCH_kPeriods": "5",
+        "STOCH_smoothingPeriods": "3",
+        "STOCHindicator_using": "false",
+        "TRADES_allow": "any",
+        "TRADES_dx": 3,
+        "TRADES_usingLimit": "false",
+        "VWAPRULE_invert": "false",
+        "VWAPindicator_using": "false",
+        "WINDOWBLOCK1_allow_position_increase_and_reversions": "true",
+        "WINDOWBLOCK1_enabled": "false",
+        "WINDOWBLOCK1_time1": "10:00:00",
+        "WINDOWBLOCK1_time2": "11:00:00",
+        "WINDOWBLOCK2_allow_position_increase_and_reversions": "true",
+        "WINDOWBLOCK2_enabled": "false",
+        "WINDOWBLOCK2_time1": "10:00:00",
+        "WINDOWBLOCK2_time2": "11:00:00",
+        "__types__": {
+            "ADXCOMPMAX_value": "number:0",
+            "ADXCOMPMIN_value": "number:0",
+            "ADXRULE_invert": "switch",
+            "ADXRULE_isFilter": "select",
+            "ADX_periods": "number:0",
+            "ADX_smooth": "number:0",
+            "ADXindicator_using": "switch",
+            "ATRRULE_invert": "switch",
+            "ATRRULE_isFilter": "select",
+            "ATR_average_type": "select",
+            "ATR_multiplier": "number:2",
+            "ATR_periods": "number:0",
+            "ATRindicator_using": "switch",
+            "BBRULE_invert": "switch",
+            "BBRULE_isFilter": "select",
+            "BB_multiplier": "number:2",
+            "BB_periods": "number:0",
+            "BBindicator_using": "switch",
+            "BREAKEVEN_using": "switch",
+            "CMARULE_invert": "switch",
+            "CMARULE_isFilter": "select",
+            "CMAindicator_using": "switch",
+            "DAILYBREAKEVEN_activation_value": "number:2",
+            "DAILYBREAKEVEN_distance": "number:2",
+            "DAILYBREAKEVEN_enabled": "switch",
+            "DAILYSTOPS_globalStopGain": "number:2",
+            "DAILYSTOPS_globalStopLoss": "number:2",
+            "DAILYSTOPS_usingGlobalStopGain": "switch",
+            "DAILYSTOPS_usingGlobalStopLoss": "switch",
+            "DAYTRADE_elim_time": "time",
+            "DAYTRADE_enabled": "switch",
+            "FIRSTTIMEBLOCK_enabled": "switch",
+            "FIRSTTIMEBLOCK_time": "time",
+            "HEIKIN_smoothed": "switch",
+            "HEIKIN_smoothingAverageType": "select",
+            "HEIKIN_smoothingPeriods": "number:0",
+            "HILOLIMIT_limit": "number:0",
+            "HILORULE_invert": "switch",
+            "HILORULE_isFilter": "select",
+            "HILO_periods": "number:0",
+            "HILOindicator_using": "switch",
+            "LASTTIMEBLOCK_enabled": "switch",
+            "LASTTIMEBLOCK_time": "time",
+            "LIMIT_execution_timeout": "number:0",
+            "LIMIT_execution_timeout_action": "buttonGroup",
+            "LIMIT_spread": "number:2",
+            "LONGMADX_dx": "number:0",
+            "LONGMA_periods": "number:0",
+            "LONGMA_usingSMA": "select",
+            "MACDFILTER_value": "number:2",
+            "MACDRULE_invert": "switch",
+            "MACDRULE_isFilter": "select",
+            "MACD_periodsDiff": "number:0",
+            "MACD_periodsLong": "number:0",
+            "MACD_periodsShort": "number:0",
+            "MACD_usingEMA": "select",
+            "MACDindicator_using": "switch",
+            "MARTINGALE_maxTrades": "select",
+            "MARTINGALE_usingModule": "switch",
+            "OBJBB_object_usage_info": "select",
+            "OBJLONGMA_object_usage_info": "select",
+            "OBJMACD_object_usage_info": "select",
+            "OBJRSI_object_usage_info": "select",
+            "OBJSHORTMA_object_usage_info": "select",
+            "PARTIALSG_numberOfStocks": "number:0",
+            "PARTIALSG_numberOfStocksType": "select",
+            "PARTIALSG_stopGainDiff": "number:2",
+            "PARTIALSG_stopGainType": "select",
+            "PARTIALSG_usingStop": "switch",
+            "POS_activeReversions": "switch",
+            "POS_numberOfStocksToTrade": "number:0",
+            "POS_quantity_capital": "number:2",
+            "POS_quantity_type": "buttonGroup",
+            "RENKO_gap": "number:2",
+            "RENKO_tradesCount": "number:0",
+            "RENKO_usingCandlesEvent": "buttonGroup",
+            "RSIRULEHIGHLEVEL_value": "number:0",
+            "RSIRULELOWLEVEL_value": "number:0",
+            "RSIRULE_invert": "switch",
+            "RSIRULE_isFilter": "select",
+            "RSI_periods": "number:0",
+            "RSIindicator_using": "switch",
+            "SARRULE_invert": "switch",
+            "SARRULE_isFilter": "select",
+            "SAR_alpha": "number:2",
+            "SAR_increment": "number:2",
+            "SAR_limit": "number:0",
+            "SAR_max_alpha": "number:2",
+            "SARindicator_using": "switch",
+            "SG_stopGainDiff": "number:2",
+            "SG_stopGainType": "select",
+            "SG_usingStop": "switch",
+            "SHORTMADX_dx": "number:0",
+            "SHORTMA_periods": "number:0",
+            "SHORTMA_usingSMA": "select",
+            "SL_stopLossDiff": "number:2",
+            "SL_stopLossType": "select",
+            "SL_usingStop": "switch",
+            "SM_stopMovelBegin": "number:2",
+            "SM_stopMovelDistance": "number:2",
+            "SM_stopMovelType": "select",
+            "SM_usingStop": "switch",
+            "STOCHFILTERHIGH_value": "number:0",
+            "STOCHFILTERLOW_value": "number:0",
+            "STOCHFILTER_usingLevelsFilter": "switch",
+            "STOCHRULE_invert": "switch",
+            "STOCHRULE_isFilter": "select",
+            "STOCH_dPeriods": "number:0",
+            "STOCH_kPeriods": "number:0",
+            "STOCH_smoothingPeriods": "number:0",
+            "STOCHindicator_using": "switch",
+            "TRADES_allow": "select",
+            "TRADES_dx": "number:0",
+            "TRADES_usingLimit": "switch",
+            "VWAPRULE_invert": "switch",
+            "VWAPindicator_using": "switch",
+            "WINDOWBLOCK1_allow_position_increase_and_reversions": "switch",
+            "WINDOWBLOCK1_enabled": "switch",
+            "WINDOWBLOCK1_time1": "time",
+            "WINDOWBLOCK1_time2": "time",
+            "WINDOWBLOCK2_allow_position_increase_and_reversions": "switch",
+            "WINDOWBLOCK2_enabled": "switch",
+            "WINDOWBLOCK2_time1": "time",
+            "WINDOWBLOCK2_time2": "time",
+            "adxMaxFilter_using": "switch",
+            "adxMinFilter_using": "switch",
+            "adxTrendFilter_using": "switch",
+            "adxTrendFilter_way": "select",
+            "entriesByTI": "select",
+            "entriesDirection": "select",
+            "entryType": "buttonGroup",
+            "graphType": "buttonGroup",
+            "includeAfterMarket": "switch",
+            "macdUsingFilter": "switch",
+            "marketName": "buttonGroup",
+            "periodicity": "number:0",
+            "stockCode": "text",
+            "stopsByTI": "select",
+            "typeADX": "select",
+            "typeATR": "select",
+            "typeBB": "select",
+            "typeCMA": "select",
+            "typeHILO": "select",
+            "typeMACD": "select",
+            "typeRSI": "select",
+            "typeSAR": "select",
+            "typeSTOCH": "select",
+            "typeVWAP": "select",
+            "usingBlockEntry": "switch",
+            "usingLimitStopGain": "buttonGroup",
+            "vwapMode": "select"
+        },
+        "adxMaxFilter_using": "false",
+        "adxMinFilter_using": "false",
+        "adxTrendFilter_using": "false",
+        "adxTrendFilter_way": "True",
+        "entriesByTI": "all",
+        "entriesDirection": "any",
+        "entryType": "market",
+        "graphType": "normal",
+        "includeAfterMarket": "false",
+        "macdUsingFilter": "false",
+        "marketName": "BMF",
+        "periodicity": "2",
+        "stockCode": "WDO%",
+        "stopsByTI": "one",
+        "typeADX": "both",
+        "typeATR": "both",
+        "typeBB": "entry_only",
+        "typeCMA": "both",
+        "typeHILO": "both",
+        "typeMACD": "both",
+        "typeRSI": "both",
+        "typeSAR": "both",
+        "typeSTOCH": "both",
+        "typeVWAP": "both",
+        "usingBlockEntry": "false",
+        "usingLimitStopGain": "True",
+        "vwapMode": "1"
+    },
+    "costs": "setup_20191128-183637",
+    "initial_capital": 2000,
+    "name": "Bands1SomenteEntry",
+    "optimization": {
+        "keys": [
+            {
+                "BBRULE_invert": [
+                    "true",
+                    "false"
+                ],
+                "BB_multiplier": [
+                    "1.70"
+                ],
+                "BB_periods": [
+                    "5"
+                ],
+                "BBindicator_using": [
+                    "true"
+                ],
+                "CMAindicator_using": [
+                    "false"
+                ],
+                "DAYTRADE_elim_time": [
+                    "17:50:00"
+                ],
+                "LASTTIMEBLOCK_enabled": [
+                    "true"
+                ],
+                "POS_activeReversions": [
+                    "false"
+                ],
+                "SG_stopGainDiff": [
+                    "5.00"
+                ],
+                "SL_stopLossDiff": [
+                    "18.00"
+                ],
+                "periodicity": [
+                    "2"
+                ],
+                "stockCode": [
+                    "WDO%"
+                ],
+                "typeBB": [
+                    "entry_only",
+                    "both"
+                ],
+                "usingBlockEntry": [
+                    "false"
+                ],
+                "usingLimitStopGain": [
+                    "True"
+                ]
+            }
+        ],
+        "start_end_dates": [
+            [
+                "2018-01-01T00:00:00.000Z",
+                "2021-04-11T00:00:00.000Z"
+            ]
+        ]
+    },
+    "robot_id": 2327552,
+    "sqlite": "./db.sqlite3",
+    "strategy_id": 419,
+    "user": "arturbessas"
+}
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] starting: i_dates: 0/1 i_robot: 0/1 i_parms: 0/4 i_key: 0/1
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] Backtest ID: 1630563
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] starting: i_dates: 0/1 i_robot: 0/1 i_parms: 1/4 i_key: 0/1
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] Backtest ID: 1630564
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] starting: i_dates: 0/1 i_robot: 0/1 i_parms: 2/4 i_key: 0/1
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] Backtest ID: 1630565
+2021-04-12 14:53:49 [/home/backtest_flavio/optimizer/json/backArtur.json] starting: i_dates: 0/1 i_robot: 0/1 i_parms: 3/4 i_key: 0/1
+2021-04-12 14:53:51 [/home/backtest_flavio/optimizer/json/backArtur.json] Backtest ID: 1630566

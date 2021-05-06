@@ -15,6 +15,9 @@
 #define TIMEOUT 30
 
 //--- input parameters
+input double max_loss = 500000;
+input int lossMonthsAllowed = 0;
+input int max_stocks = 100;
 input int tipoMedia;
 input int periodoMedia;
 input int dx;
@@ -65,6 +68,7 @@ int lastMonth;
 bool above = true;
 bool lockEntriesByLoss = false;
 double optResult = 0.0;
+int monthsWithLoss = 0;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -79,8 +83,11 @@ int OnInit()
 	if (validStrategy && increasesPtsStr == "")
 		validStrategy = reprocessIncreases();
 
-	//if(!validStrategy)
-	//ExpertRemove();
+	if (validStrategy)
+		validStrategy = getMaxLoss();
+
+	//if(validStrategy)
+	//	validStrategy = cutSomeSheet();
 
 	TimeToStruct(TimeCurrent(), tempo);
 	lastMonth = tempo.mon;
@@ -91,8 +98,8 @@ int OnInit()
 double OnTester()
 {
 	if (TesterStatistics(STAT_PROFIT) == 0)
-		return -100;
-	return optResult + 0.00001 * TesterStatistics(STAT_PROFIT);
+		return -200;
+	return optResult + 0.000001 * TesterStatistics(STAT_PROFIT);
 }
 
 void OnDeinit(const int reason)
@@ -102,7 +109,7 @@ void OnDeinit(const int reason)
 void OnTick()
 {
 	if (!validStrategy)
-		return;
+		ExpertRemove();
 
 	getMedia();
 
@@ -349,18 +356,21 @@ bool reprocessIncreases()
 	}
 
 	increaseNumber = ArraySize(increasesPts);
-	int stocks = increasesQtt[0] + 1;
-
-	for (i = 1; i < increaseNumber; i++)
-	{
-		if (increasesPts[i] <= increasesPts[i - 1])
-			return false;
-		stocks += increasesQtt[i];
-	}
 
 	if (increaseNumber)
-		if (increasesPts[increaseNumber - 1] >= stopLoss || stocks > 100)
+	{
+		int stocks = increasesQtt[0] + 1;
+
+		for (i = 1; i < increaseNumber; i++)
+		{
+			if (increasesPts[i] <= increasesPts[i - 1])
+				return false;
+			stocks += increasesQtt[i];
+		}
+
+		if (increasesPts[increaseNumber - 1] >= stopLoss || stocks > max_stocks)
 			return false;
+	}
 
 	return true;
 }
@@ -413,13 +423,49 @@ void checkMonthlyProfit()
 
 	if (result < 0)
 	{
-		optResult -= 100.0;
+		monthsWithLoss++;
+	}
+	if (monthsWithLoss > lossMonthsAllowed)
+	{
+		optResult -= 200;
 		ExpertRemove();
 	}
 	else
 	{
 		optResult += 1.0;
 	}
+}
+
+bool getMaxLoss()
+{
+	int stocks = 1;
+	int volume = 0;
+	for (i = 0; i < increaseNumber; i++)
+	{
+		volume += increasesPts[i] * increasesQtt[i];
+		stocks += increasesQtt[i];
+	}
+	double average = volume / stocks;
+	double loss = (stopLoss - average) * 10 * stocks;
+	if (loss > max_loss)
+		return false;
+	return true;
+}
+
+bool cutSomeSheet()
+{
+	if (increaseNumber < 1 && (firstIncreaseStocks > 13 || firstIncreasePts > 50))
+		return false;
+	if (increaseNumber < 2 && (secondIncreaseStocks > 13 || secondIncreasePts > 50))
+		return false;
+	if (increaseNumber < 3 && (thirdIncreaseStocks > 13 || thirdIncreasePts > 50))
+		return false;
+	if (increaseNumber < 4 && (fourthIncreaseStocks > 13 || fourthIncreasePts > 50))
+		return false;
+	if (increaseNumber < 5 && (fifthIncreaseStocks > 13 || fifthIncreasePts > 50))
+		return false;
+
+	return true;
 }
 
 void add(int &v[], int x)

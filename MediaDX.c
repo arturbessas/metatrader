@@ -15,6 +15,8 @@
 #define TIMEOUT 30
 
 //--- input parameters
+input int hora_limite = 16;
+input int minuto_limite = 30;
 input double max_loss = 500000;
 input int lossMonthsAllowed = 0;
 input int max_stocks = 100;
@@ -289,7 +291,7 @@ bool validTick()
 			cancelIncreaseOrder();
 	}
 
-	if (!isPositioned && ((tempo.hour == 16 && tempo.min >= 30) || tempo.hour > 16))
+	if (!isPositioned && ((tempo.hour == hora_limite && tempo.min >= minuto_limite) || tempo.hour > hora_limite))
 		return false;
 
 	if (isPositioned && tempo.hour >= 17 && tempo.min >= 30)

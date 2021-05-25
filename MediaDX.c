@@ -10,25 +10,32 @@
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
 #include <Trade\OrderInfo.mqh>
+#include <Utils.mqh>
 
 #define MAX_TRIES 5
 #define TIMEOUT 30
 
 //--- input parameters
+input ulong magic_number = 1;
+input int nContratos = 1;
+input int hora_inicial = 9;
+input int minuto_inicial = 0;
 input int hora_limite = 16;
 input int minuto_limite = 30;
 input double max_loss = 500000;
-input int lossMonthsAllowed = 0;
+input int lossMonthsAllowed = 100;
 input int max_stocks = 100;
-input int tipoMedia;
-input int periodoMedia;
-input int dx;
-input int periodoGrafico;
-input int trendwise;
+input int tipoMedia = 2;
+input int periodoMedia = 23;
+input int dx = 7;
+input int periodoGrafico = 1;
+input int trendwise = 0;
 input double stopLoss;
 input double takeProfit;
-input string increasesQttStr = "";
+input int usingSaidaPorDistancia = 0;
+input double distanciaParaSaida = 0.5;
 input string increasesPtsStr = "";
+input string increasesQttStr = "";
 input int firstIncreasePts = 0;
 input int firstIncreaseStocks = 0;
 input int secondIncreasePts = 0;
@@ -46,7 +53,7 @@ double aux[];
 bool previousSignal;
 bool firstTick = true;
 string stock;
-CPositionInfo posManager;
+posManager pos;
 CTrade trade;
 COrderInfo order;
 MqlTick tick;
@@ -60,7 +67,6 @@ int increaseNumber = 0;
 int separator = StringGetCharacter(",", 0);
 int increasesPts[];
 int increasesQtt[];
-int i, j, k;
 double entryPrice = 0.0;
 bool validStrategy = true;
 ulong entryOrder = 0;
@@ -78,8 +84,9 @@ int monthsWithLoss = 0;
 int OnInit()
 {
 	trade.SetTypeFilling(ORDER_FILLING_FOK);
+	Print("Type filling configurado.");
 	ArraySetAsSeries(aux, true);
-	mediaHandle = iMA(_Symbol, getPeriodoGrafico(), periodoMedia, 0, getTipoMedia(), PRICE_CLOSE);
+	mediaHandle = iMA(_Symbol, getPeriodoGrafico(periodoGrafico), periodoMedia, 0, getTipoMedia(tipoMedia), PRICE_CLOSE);
 	stock = Symbol();
 	validStrategy = processIncreases();
 	if (validStrategy && increasesPtsStr == "")
@@ -93,6 +100,9 @@ int OnInit()
 
 	TimeToStruct(TimeCurrent(), tempo);
 	lastMonth = tempo.mon;
+
+	trade.SetExpertMagicNumber(magic_number);
+	PrintFormat("Magic number setado: %d", magic_number);
 
 	return (INIT_SUCCEEDED);
 }
@@ -119,21 +129,25 @@ void OnTick()
 		return;
 
 	//regra de entrada
-	if (!posManager.Select(stock) && !isEntryLocked())
+	if (pos.owned_stocks == 0 && !isEntryLocked())
 		getEntry();
+
+	storeSignals();
 }
 
 void OnTradeTransaction(const MqlTradeTransaction &trans,
 						const MqlTradeRequest &request,
 						const MqlTradeResult &result)
 {
-	if (posManager.Select(stock))
+	update_position_info((MqlTradeTransaction)trans, pos);
+
+	if (pos.owned_stocks != 0)
 	{
 		if (trans.order == lastIncreaseOrder && trans.order_state == ORDER_STATE_FILLED)
 		{
 			if (increaseStep == 0)
 			{
-				entryPrice = posManager.PriceOpen();
+				entryPrice = trans.price;
 				//send stop gain
 				sendTP();
 				lockEntries = false;
@@ -146,17 +160,21 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 				else if (opType == "sell")
 					trade.SellLimit(increasesQtt[increaseStep], roundPrice(entryPrice + increasesPts[increaseStep]), stock);
 
+				logger("Aumento de posição enviado.");
 				lastIncreaseOrder = trade.ResultOrder();
 			}
 			//update stop gain if a increase was executed
 			if (order.Select(tpOrder) && increaseStep > 0)
 			{
 				trade.OrderDelete(tpOrder);
-				double tp = opType == "buy" ? posManager.PriceOpen() + takeProfit : posManager.PriceOpen() - takeProfit;
+				logger("Deletando TP para envio de nova ordem de TP.");
+				double tp = opType == "buy" ? pos.average_price + takeProfit : pos.average_price - takeProfit;
 				if (opType == "buy")
-					trade.SellLimit(posManager.Volume(), roundPrice(tp), stock);
+					trade.SellLimit(MathAbs(pos.owned_stocks), roundPrice(tp), stock);
 				else if (opType == "sell")
-					trade.BuyLimit(posManager.Volume(), roundPrice(tp), stock);
+					trade.BuyLimit(MathAbs(pos.owned_stocks), roundPrice(tp), stock);
+
+				logger("TP atualizado.");
 
 				tpOrder = trade.ResultOrder();
 			}
@@ -168,15 +186,16 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 
 void sendTP()
 {
-	if (posManager.Select(stock) && !tpSent)
+	if (pos.owned_stocks != 0 && !tpSent)
 	{
-		double tp = opType == "buy" ? posManager.PriceOpen() + takeProfit : posManager.PriceOpen() - takeProfit;
+		double tp = opType == "buy" ? pos.average_price + takeProfit : pos.average_price - takeProfit;
 		int attempts = 0;
 		if (opType == "buy")
-			trade.SellLimit(1, tp, stock);
+			trade.SellLimit(MathAbs(pos.owned_stocks), roundPrice(tp), stock);
 		else
-			trade.BuyLimit(1, tp, stock);
+			trade.BuyLimit(MathAbs(pos.owned_stocks), roundPrice(tp), stock);
 
+		logger("TP Enviado.");
 		tpOrder = trade.ResultOrder();
 		tpSent = true;
 	}
@@ -187,6 +206,7 @@ void getEntry()
 	if (getSignal() != "")
 	{
 		tpSent = false;
+		lockEntries = true;
 		increaseStep = 0;
 		int attempts = 0;
 		entryPrice = 0;
@@ -195,12 +215,12 @@ void getEntry()
 			attempts++;
 			if ((trendwise && getSignal() == "upper") || (!trendwise && getSignal() == "lower"))
 			{
-				trade.BuyLimit(1.0, tick.last, stock, 0.0, 0.0, ORDER_TIME_GTC, 0, "Compra por rompimento de banda");
+				trade.BuyLimit(nContratos, roundPrice(tick.last), stock, 0.0, 0.0, ORDER_TIME_GTC, 0, "Compra por rompimento de banda");
 				opType = "buy";
 			}
 			else if ((trendwise && getSignal() == "lower") || (!trendwise && getSignal() == "upper"))
 			{
-				trade.SellLimit(1.0, tick.last, stock, 0.0, 0.0, ORDER_TIME_GTC, 0, "Venda por rompimento de banda");
+				trade.SellLimit(nContratos, roundPrice(tick.last), stock, 0.0, 0.0, ORDER_TIME_GTC, 0, "Venda por rompimento de banda");
 				opType = "sell";
 			}
 		} while (trade.ResultRetcode() != 10009 && attempts <= MAX_TRIES);
@@ -210,6 +230,13 @@ void getEntry()
 			entryTime = tick.time;
 			lockEntries = true;
 			lastIncreaseOrder = trade.ResultOrder();
+			entryPrice = tick.last; //provisório
+			logger("Ordem de entrada enviada.");
+		}
+		else
+		{
+			lockEntries = false;
+			logger("Desbloqueando entradas por entrada mal sucedida");
 		}
 	}
 }
@@ -223,6 +250,7 @@ bool isEntryLocked()
 			lockEntries = false;
 			trade.OrderDelete(lastIncreaseOrder);
 			lastIncreaseOrder = 0;
+			logger("Cancelando ordem por timeout.");
 		}
 	}
 
@@ -258,7 +286,7 @@ bool validTick()
 	if (!SymbolInfoTick(Symbol(), tick))
 		return false;
 
-	bool isPositioned = posManager.Select(stock);
+	bool isPositioned = pos.owned_stocks != 0;
 
 	if (isPositioned)
 		checkStopLoss();
@@ -271,7 +299,7 @@ bool validTick()
 		lastMonth = tempo.mon;
 	}
 
-	if (tempo.hour < 9)
+	if ((tempo.hour < hora_inicial) || (tempo.hour == hora_inicial && tempo.min < minuto_inicial))
 	{
 		increaseStep = 0;
 		lastIncreaseOrder = 0;
@@ -282,13 +310,19 @@ bool validTick()
 	if (!isPositioned && order.Select(tpOrder))
 	{
 		if (order.State() != ORDER_STATE_FILLED && order.State() != ORDER_STATE_CANCELED)
+		{
 			cancelStopGain();
+			logger("Cancelando stop gain por não estar posicionado.");
+		}
 	}
 
 	if (!isPositioned && order.Select(lastIncreaseOrder) && increaseStep)
 	{
 		if (order.State() != ORDER_STATE_FILLED && order.State() != ORDER_STATE_CANCELED)
+		{
 			cancelIncreaseOrder();
+			logger("Cancelando increase por não estar posicionado.");
+		}
 	}
 
 	if (!isPositioned && ((tempo.hour == hora_limite && tempo.min >= minuto_limite) || tempo.hour > hora_limite))
@@ -299,6 +333,7 @@ bool validTick()
 		trade.PositionClose(stock);
 		cancelStopGain();
 		cancelIncreaseOrder();
+		logger("Zerando posição e cancelando ordens por tempo limite.");
 		return false;
 	}
 
@@ -314,6 +349,17 @@ void checkStopLoss()
 		cancelIncreaseOrder();
 		lockEntriesByLoss = true;
 		above = tick.last > media;
+		logger("Zerando posição e cancelando ordens por stop loss.");
+		logger(opType + " Last: " + DoubleToString(tick.last) + " entry: " + DoubleToString(entryPrice) + " sl: " + DoubleToString(stopLoss));
+	}
+
+	//saida por toque
+	if (usingSaidaPorDistancia && MathAbs(tick.last - media) <= distanciaParaSaida)
+	{
+		trade.PositionClose(stock);
+		cancelStopGain();
+		cancelIncreaseOrder();
+		logger("Zerando posição e cancelando ordens por toque na media.");
 	}
 }
 
@@ -363,7 +409,7 @@ bool reprocessIncreases()
 	{
 		int stocks = increasesQtt[0] + 1;
 
-		for (i = 1; i < increaseNumber; i++)
+		for (int i = 1; i < increaseNumber; i++)
 		{
 			if (increasesPts[i] <= increasesPts[i - 1])
 				return false;
@@ -385,13 +431,13 @@ bool processIncreases()
 	string auxStr[];
 
 	StringSplit(increasesPtsStr, separator, auxStr);
-	for (i = 0; i < ArraySize(auxStr); i++)
+	for (int i = 0; i < ArraySize(auxStr); i++)
 	{
 		add(increasesPts, StringToInteger(auxStr[i]));
 	}
 	ArrayFree(auxStr);
 	StringSplit(increasesQttStr, separator, auxStr);
-	for (i = 0; i < ArraySize(auxStr); i++)
+	for (int i = 0; i < ArraySize(auxStr); i++)
 	{
 		add(increasesQtt, StringToInteger(auxStr[i]));
 	}
@@ -417,7 +463,7 @@ void checkMonthlyProfit()
 	ulong auxTicket;
 	double result = 0;
 
-	for (i = 0; i < HistoryDealsTotal(); i++)
+	for (int i = 0; i < HistoryDealsTotal(); i++)
 	{
 		auxTicket = HistoryDealGetTicket(i);
 		result += HistoryDealGetDouble(auxTicket, DEAL_PROFIT);
@@ -442,7 +488,7 @@ bool getMaxLoss()
 {
 	int stocks = 1;
 	int volume = 0;
-	for (i = 0; i < increaseNumber; i++)
+	for (int i = 0; i < increaseNumber; i++)
 	{
 		volume += increasesPts[i] * increasesQtt[i];
 		stocks += increasesQtt[i];
@@ -470,75 +516,65 @@ bool cutSomeSheet()
 	return true;
 }
 
-void add(int &v[], int x)
-{
-	int size = ArraySize(v);
-	ArrayResize(v, size + 1);
-	v[size] = x;
-}
-
 double roundPrice(double price)
 {
-	double ticks = price / 0.5;
-	return round(ticks) * 0.5;
+	double min_var = 0.5;
+	if (StringFind(stock, "WIN") >= 0)
+		min_var = 5.0;
+	double ticks = price / min_var;
+	return round(ticks) * min_var;
 }
 
-ENUM_TIMEFRAMES getPeriodoGrafico()
+void recoverSignals()
 {
-	switch (periodoGrafico)
-	{
-	case 1:
-		return PERIOD_M1;
-		break;
-	case 2:
-		return PERIOD_M2;
-		break;
-	case 3:
-		return PERIOD_M3;
-		break;
-	case 4:
-		return PERIOD_M4;
-		break;
-	case 5:
-		return PERIOD_M5;
-		break;
-	case 6:
-		return PERIOD_M6;
-		break;
-	case 7:
-		return PERIOD_M10;
-		break;
-	case 8:
-		return PERIOD_M12;
-		break;
-	case 9:
-		return PERIOD_M15;
-		break;
-	case 10:
-		return PERIOD_M20;
-		break;
-	case 11:
-		return PERIOD_M30;
-		break;
-	case 12:
-		return PERIOD_H1;
-		break;
-	default:
-		return _Period;
-	}
+	string name = "tpOrder" + IntegerToString(magic_number);
+	tpOrder = (ulong)GlobalVariableGet(name);
+
+	name = "lastIncreaseOrder" + IntegerToString(magic_number);
+	lastIncreaseOrder = (ulong)GlobalVariableGet(name);
+
+	name = "increaseStep" + IntegerToString(magic_number);
+	increaseStep = (int)GlobalVariableGet(name);
+
+	name = "entryPrice" + IntegerToString(magic_number);
+	entryPrice = GlobalVariableGet(name);
+
+	name = "entryOrder" + IntegerToString(magic_number);
+	entryOrder = (ulong)GlobalVariableGet(name);
+
+	name = "lockEntries" + IntegerToString(magic_number);
+	lockEntries = (bool)GlobalVariableGet(name);
+
+	name = "above" + IntegerToString(magic_number);
+	above = (bool)GlobalVariableGet(name);
+
+	name = "lockEntriesByLoss" + IntegerToString(magic_number);
+	lockEntriesByLoss = (bool)GlobalVariableGet(name);
 }
 
-ENUM_MA_METHOD getTipoMedia()
+void storeSignals()
 {
-	switch (tipoMedia)
-	{
-	case 1:
-		return MODE_SMA;
-		break;
-	case 2:
-		return MODE_EMA;
-		break;
-	default:
-		return MODE_SMA;
-	}
+	string name = "tpOrder" + IntegerToString(magic_number);
+	GlobalVariableSet(name, (double)tpOrder);
+
+	name = "lastIncreaseOrder" + IntegerToString(magic_number);
+	GlobalVariableSet(name, (double)lastIncreaseOrder);
+
+	name = "increaseStep" + IntegerToString(magic_number);
+	GlobalVariableSet(name, (double)increaseStep);
+
+	name = "entryPrice" + IntegerToString(magic_number);
+	GlobalVariableSet(name, entryPrice);
+
+	name = "entryOrder" + IntegerToString(magic_number);
+	GlobalVariableSet(name, (double)entryOrder);
+
+	name = "lockEntries" + IntegerToString(magic_number);
+	GlobalVariableSet(name, (double)lockEntries);
+
+	name = "above" + IntegerToString(magic_number);
+	GlobalVariableSet(name, (double)above);
+
+	name = "lockEntriesByLoss" + IntegerToString(magic_number);
+	GlobalVariableSet(name, (double)lockEntriesByLoss);
 }

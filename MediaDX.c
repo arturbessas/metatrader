@@ -83,7 +83,7 @@ int monthsWithLoss = 0;
 //+------------------------------------------------------------------+
 int OnInit()
 {
-	trade.SetTypeFilling(ORDER_FILLING_FOK);
+	trade.SetTypeFilling(ORDER_FILLING_RETURN);
 	Print("Type filling configurado.");
 	ArraySetAsSeries(aux, true);
 	mediaHandle = iMA(_Symbol, getPeriodoGrafico(periodoGrafico), periodoMedia, 0, getTipoMedia(tipoMedia), PRICE_CLOSE);
@@ -140,6 +140,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 						const MqlTradeResult &result)
 {
 	update_position_info((MqlTradeTransaction)trans, pos);
+	PrintFormat("Owned: %d - Preço: %f", pos.owned_stocks, pos.average_price);
 
 	if (pos.owned_stocks != 0)
 	{
@@ -328,7 +329,7 @@ bool validTick()
 	if (!isPositioned && ((tempo.hour == hora_limite && tempo.min >= minuto_limite) || tempo.hour > hora_limite))
 		return false;
 
-	if (isPositioned && tempo.hour >= 17 && tempo.min >= 30)
+	if (isPositioned && tempo.hour >= 17 && tempo.min >= 45)
 	{
 		trade.PositionClose(stock);
 		cancelStopGain();

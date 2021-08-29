@@ -17,32 +17,27 @@ Context context;
 */
 
 
-class TradesLimit
+class TradesLimit: public Node
 {	
 	public:
 	int Value;
-	bool Enabled;
 		
-	void on_order(void);
+	void on_order(MqlTradeTransaction &trans);
 	
 	TradesLimit(void);
-	TradesLimit(bool enabled, int value);
+	TradesLimit(int value);
 	~TradesLimit(){};
 };
 
 TradesLimit::TradesLimit(void){}
 
-TradesLimit::TradesLimit(bool enabled, int value)
+TradesLimit::TradesLimit(int value)
 {
-	Enabled = enabled;
 	Value = value;
 }
 
-void TradesLimit::on_order(void)
-{
-	if(!Enabled)
-		return;
-	
+void TradesLimit::on_order(MqlTradeTransaction &trans)
+{	
 	HistorySelect(TimeCurrent() - 12*60*60, TimeCurrent());
 	int trades = HistoryDealsTotal() / 2;
 	

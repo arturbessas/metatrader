@@ -17,7 +17,7 @@ Context context;
 */
 
 
-class StopLoss
+class StopLoss: public Node
 {	
 	public:
 	double Distance;

@@ -6,10 +6,12 @@
 #property copyright "Artur Bessas (artur.bessas@smarttbot.com)"
 #property link      "https://www.smarttbot.com"
 
+#include <Arrays\ArrayObj.mqh>
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
 #include <Trade\OrderInfo.mqh>
 #include <Optimizer.mqh>
+#include <Object.mqh>
 
 #define TIMEOUT 60
 
@@ -18,6 +20,17 @@ struct TickInfo
 	MqlTick tick;
 	MqlDateTime time;
 };
+
+
+class Node: public CObject
+{
+	public:
+	virtual void on_trade(void){};
+	virtual void on_order(MqlTradeTransaction &trans){};
+	Node(void){};
+	~Node(){};
+};
+
 
 class Context
 {	
@@ -29,6 +42,7 @@ class Context
 	Optimizer *optimizer;
 	
 	void on_order(MqlTradeTransaction &trans);
+	void on_trade(void);
 	
 	
 	datetime start_time;
@@ -40,9 +54,14 @@ class Context
 	TickInfo tick;
 	double entry_price;
 	
-	double current_price(void) {return tick.tick.last;}
+	CArrayObj *on_trade_nodes;
+	CArrayObj *on_order_nodes;
 	
-	bool valid_tick(int h_ini, int m_ini, int h_end, int m_end);
+	
+	double current_price(void) {return tick.tick.last;}
+	bool is_new_day(void) {return optimizer.is_new_day;}
+	
+	bool check_times(int h_ini, int m_ini, int h_end, int m_end);
 	int compare_time(MqlDateTime &mql_time, int hour, int min);
 	ENUM_TIMEFRAMES get_periodicity(int p);
 	void check_new_bar(void);
@@ -64,22 +83,37 @@ Context::Context(void)
 	entries_locked = false;
 	daily_locked = false;
 	entry_price = 0;
+	
+	on_trade_nodes = new CArrayObj;
+	on_order_nodes = new CArrayObj;
 }
 
-bool Context::valid_tick(int h_ini, int m_ini, int h_end, int m_end)
+void Context::on_trade(void)
 {
-	if(!SymbolInfoTick(Symbol(), tick.tick))
-		return false;
-		
-	check_entry_timeout();
-		
-	TimeToStruct(tick.tick.time, tick.time);
+	SymbolInfoTick(Symbol(), tick.tick);
+	
+	//apagar
+	double last = tick.tick.last;
+	PrintFormat("Lastzera: %f", last);
 	
 	//optmization checks
 	optimizer.on_trade();
 	
 	if(optimizer.is_new_day)
-		daily_locked = false;
+		daily_locked = false;	
+
+	for(int i = 0; i < on_trade_nodes.Total(); i++)
+	{
+		Node *node = on_trade_nodes.At(i);
+		node.on_trade();
+	}
+}
+
+bool Context::check_times(int h_ini, int m_ini, int h_end, int m_end)
+{
+	check_entry_timeout();
+		
+	TimeToStruct(tick.tick.time, tick.time);	
 	
 	if(compare_time(tick.time, elim_hour, elim_min) >= 0)
 	{
@@ -106,24 +140,6 @@ int Context::compare_time(MqlDateTime &mql_time, int hour, int min)
 		return 1;
 	else
 		return -1;
-}
-
-ENUM_TIMEFRAMES Context::get_periodicity(int p)
-{
-	if(p == 0)
-		return PERIOD_M1;
-	if(p == 1)
-		return PERIOD_M5;
-	if(p == 2)
-		return PERIOD_M10;
-	if(p == 3)
-		return PERIOD_M15;
-	if(p == 4)
-		return PERIOD_M30;
-	if(p == 5)
-		return PERIOD_H1;
-	
-	return PERIOD_M1;
 }
 
 void Context::check_new_bar()
@@ -180,6 +196,12 @@ void Context::on_order(MqlTradeTransaction &trans)
 		else
 			entry_price = 0;
 	}
+	
+	for(int i = 0; i < on_order_nodes.Total(); i++)
+	{
+		Node *node = on_order_nodes.At(i);
+		node.on_order((MqlTradeTransaction)trans);
+	}
 }
 
 bool Context::is_testing(void)
@@ -210,4 +232,22 @@ double Context::get_daily_profit(void)
 	}
 	
 	return result;
+}
+
+ENUM_TIMEFRAMES Context::get_periodicity(int p)
+{
+	if(p == 0)
+		return PERIOD_M1;
+	if(p == 1)
+		return PERIOD_M5;
+	if(p == 2)
+		return PERIOD_M10;
+	if(p == 3)
+		return PERIOD_M15;
+	if(p == 4)
+		return PERIOD_M30;
+	if(p == 5)
+		return PERIOD_H1;
+	
+	return PERIOD_M1;
 }

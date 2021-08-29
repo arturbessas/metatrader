@@ -19,7 +19,7 @@ COrderInfo order;
 */
 
 
-class StopGain
+class StopGain: public Node
 {	
 	public:
 	double Distance;

@@ -13,6 +13,7 @@
 #include <Optimizer.mqh>
 #include <Object.mqh>
 
+
 #define TIMEOUT 60
 
 struct TickInfo
@@ -31,6 +32,14 @@ class Node: public CObject
 	~Node(){};
 };
 
+class Rule: public Node
+{
+	public:
+	string Signal;	
+	Rule(void){};
+	~Rule(){};
+};
+
 
 class Context
 {	
@@ -44,7 +53,7 @@ class Context
 	void on_order(MqlTradeTransaction &trans);
 	void on_trade(void);
 	
-	
+	string stock_code;
 	datetime start_time;
 	datetime last_candle_time;
 	bool valid_strategy;
@@ -53,6 +62,7 @@ class Context
 	bool daily_locked;
 	TickInfo tick;
 	double entry_price;
+	ENUM_TIMEFRAMES periodicity;
 	
 	CArrayObj *on_trade_nodes;
 	CArrayObj *on_order_nodes;
@@ -63,7 +73,8 @@ class Context
 	
 	bool check_times(int h_ini, int m_ini, int h_end, int m_end);
 	int compare_time(MqlDateTime &mql_time, int hour, int min);
-	ENUM_TIMEFRAMES get_periodicity(int p);
+	void set_periodicity(int p);
+	ENUM_APPLIED_PRICE get_price_type(price_type_enum p);
 	void check_new_bar(void);
 	double round_price(double price);
 	void check_entry_timeout();
@@ -88,13 +99,14 @@ Context::Context(void)
 	on_order_nodes = new CArrayObj;
 }
 
-void Context::on_trade(void)
+void Context::on_trade(string stockCode = Symbol())
 {
-	SymbolInfoTick(Symbol(), tick.tick);
+	stock_code = stockCode;
+	
+	SymbolInfoTick(stock_code, tick.tick);
 	
 	//apagar
 	double last = tick.tick.last;
-	PrintFormat("Lastzera: %f", last);
 	
 	//optmization checks
 	optimizer.on_trade();
@@ -234,20 +246,34 @@ double Context::get_daily_profit(void)
 	return result;
 }
 
-ENUM_TIMEFRAMES Context::get_periodicity(int p)
+void Context::set_periodicity(int p)
 {
 	if(p == 0)
-		return PERIOD_M1;
-	if(p == 1)
-		return PERIOD_M5;
-	if(p == 2)
-		return PERIOD_M10;
-	if(p == 3)
-		return PERIOD_M15;
-	if(p == 4)
-		return PERIOD_M30;
-	if(p == 5)
-		return PERIOD_H1;
-	
-	return PERIOD_M1;
+		periodicity = PERIOD_M1;
+	else if(p == 1)
+		periodicity = PERIOD_M5;
+	else if(p == 2)
+		periodicity = PERIOD_M10;
+	else if(p == 3)
+		periodicity = PERIOD_M15;
+	else if(p == 4)
+		periodicity = PERIOD_M30;
+	else if(p == 5)
+		periodicity = PERIOD_H1;
+	else
+		periodicity = PERIOD_M1;
+}
+
+ENUM_APPLIED_PRICE Context::get_price_type(price_type_enum p)
+{
+	if(p == price_type_close)
+		return PRICE_CLOSE;
+	if(p == price_type_open)
+		return PRICE_OPEN;
+	if(p == price_type_high)
+		return PRICE_HIGH;
+	if(p == price_type_low)
+		return PRICE_LOW;	
+	else
+		return PRICE_CLOSE;
 }

@@ -10,6 +10,12 @@
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
 #include <Trade\OrderInfo.mqh>
+#include <StockCodes.mqh>
+#include <Generic\HashMap.mqh>
+#include <Context.mqh>
+#include <StopLoss.mqh>
+#include <MarketStopGain.mqh>
+#include <PositionIncreaserMarket.mqh>
 
 #define MAX_TRIES 5
 #define TIMEOUT 30
@@ -34,19 +40,20 @@ input double secondIncreasePts = 0;
 input double secondIncreaseStocks = 0;
 input double thirdIncreasePts = 0;
 input double thirdIncreaseStocks = 0;
-input int fourthIncreasePts = 0;
-input int fourthIncreaseStocks = 0;
-input int fifthIncreasePts = 0;
-input int fifthIncreaseStocks = 0;
+input double fourthIncreasePts = 0;
+input double fourthIncreaseStocks = 0;
+input double fifthIncreasePts = 0;
+input double fifthIncreaseStocks = 0;
 
-int lastDays[2][13];
-
-int mediaHandle;
+CHashMap<string, Context*> ContextMap;
+CHashMap<string, StopLoss*> StopLossMap;
+CHashMap<string, MarketStopGain*> MarketStopGainMap;
+CHashMap<string, PositionIncreaserMarket*> PositionIncreaserMarketMap;
+CHashMap<string, int> mediaHandle;
 double media;
 double aux[];
 bool previousSignal;
 bool firstTick = true;
-string stock;
 CPositionInfo posManager;
 CTrade trade;
 COrderInfo order;
@@ -61,8 +68,7 @@ int increaseNumber = 0;
 int separator = StringGetCharacter(",", 0);
 double increasesPts[];
 int increasesQtt[];
-int i, j, k;
-double entryPrice = 0.0;
+//int i, j, k;
 bool validStrategy = true;
 ulong entryOrder = 0;
 bool lockEntries = false;
@@ -83,19 +89,13 @@ int OnInit()
 {
 	trade.SetTypeFilling(ORDER_FILLING_FOK);
 	ArraySetAsSeries(aux,true);
-	mediaHandle = iMA(_Symbol,getPeriodoGrafico(),periodoMedia,0,getTipoMedia(),PRICE_CLOSE);
-	stock = Symbol();
+	for(int i = 0; i < ArraySize(stockCodes), i++)
+		mediaHandle.add(stockCodes[i], iMA(stockCodes[i],getPeriodoGrafico(),periodoMedia,0,getTipoMedia(),PRICE_CLOSE));
 	validStrategy = processIncreases();
 	if(validStrategy && increasesPtsStr == "")
 		validStrategy = reprocessIncreases();
 		
-	//if(validStrategy)
-	//	validStrategy = getMaxLoss();
-	
-	//if(validStrategy)
-	//	validStrategy = cutSomeSheet();
-	
-	getLastDays();
+	//init modules
 		
 	TimeToStruct(TimeCurrent(), tempo);
 	lastMonth = tempo.mon;
@@ -120,19 +120,24 @@ void OnTick()
 	if(!validStrategy)
 		ExpertRemove();
 		
-	getMedia();	
-	
-	if(!validTick())
-		return;			
+	for(int i=0; i<ArraySize(stockCodes); i++)
+	{
+		stockCode = stockCodes[i];
 		
-	if(expiredIncreaseVolume != 0)
-		handleExpiredIncrease();
-	if(expiredTP != 0)
-		handleExpiredTP();
-	
-	//regra de entrada
-	if(!posManager.Select(stock) && !isEntryLocked())
-		getEntry();
+		getMedia(stockCode);	
+		
+		if(!validTick(stockCode))
+			return;			
+			
+		if(expiredIncreaseVolume != 0)
+			handleExpiredIncrease();
+		if(expiredTP != 0)
+			handleExpiredTP();
+		
+		//regra de entrada
+		if(!posManager.Select(stock) && !isEntryLocked())
+			getEntry();		
+	}
 	
 	
 	
@@ -142,17 +147,19 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
 {
-	if(posManager.Select(stock))
+	string stockCode = trans.symbol;
+	
+	if(posManager.Select(stockCode))
 	{
 		if(trans.order == lastIncreaseOrder && trans.order_state == ORDER_STATE_FILLED)
 		{		
 			if(increaseStep == 0)
 			{
-				entryPrice = posManager.PriceOpen();				
+				entryPrices.TrySetValue(stockCode, posManager.PriceOpen());				
 				lockEntries = false;
 			}
 			
-			sendIncreaseAndUpdateTp();
+			sendIncreaseAndUpdateTp(stockCode);
 		}
 		
 		else if(trans.order == lastIncreaseOrder && trans.order_state == ORDER_STATE_EXPIRED)
@@ -170,10 +177,13 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 
 }
 
-void sendIncreaseAndUpdateTp()
+void sendIncreaseAndUpdateTp(string stockCode)
 {
 	//update stop gain
-	sendTP();
+	sendTP(stockCode);
+	
+	double entryPrice;
+	entryPrices.TryGetValue(stockCode, entryPrice);
 	
 	//send new increase
 	if(increaseStep < increaseNumber)
@@ -187,7 +197,7 @@ void sendIncreaseAndUpdateTp()
 	increaseStep++;
 }
 
-void sendTP()
+void sendTP(string stockCode)
 {
 	if(order.Select(tpOrder))
 	{
@@ -199,8 +209,7 @@ void sendTP()
 	if(opType == "buy")
 		trade.SellLimit(posManager.Volume(), roundPrice(tp), stock, 0, 0, ORDER_TIME_GTC, 0, "Take Profit");
 	
-	tpOrder = trade.ResultOrder();
-	
+	tpOrder = trade.ResultOrder();	
 }
 
 void handleExpiredTP()
@@ -307,18 +316,20 @@ string getSignal()
 	return "";
 }
 
-void getMedia()
-{
-	CopyBuffer(mediaHandle,0,0,1,aux);
+void getMedia(string stockCode)
+{	
+	int handle;
+	mediaHandle.TryGetValue(stockCode, handle);
+	CopyBuffer(handle,0,0,1,aux);
 	media = aux[0];
 }
 
-bool validTick()
+bool validTick(string stockCode)
 {
-	if(!SymbolInfoTick(Symbol(),tick))
+	if(!SymbolInfoTick(stockCode, tick))
 		return false;
 		
-	bool isPositioned = posManager.Select(stock);
+	bool isPositioned = posManager.Select(stockCode);
 	
 	if(isPositioned)
 		checkStopLoss();
@@ -364,11 +375,11 @@ bool validTick()
 	return true;
 }
 
-void checkStopLoss()
+void checkStopLoss(string stockCode)
 {	
-	if((opType == "buy" && tick.last <= entryPrice * (1 - (stopLoss/100))))
+	if((tick.last <= entryPrice * (1 - (stopLoss/100))))
 	{
-		trade.PositionClose(stock);
+		trade.PositionClose(stockCode);
 		cancelStopGain();
 		cancelIncreaseOrder();
 		lockEntriesByLoss = true;
@@ -609,25 +620,4 @@ ENUM_MA_METHOD getTipoMedia()
 	   default:
 	      return MODE_SMA;
 	  }
-}
-
-void getLastDays()
-{
-	lastDays[0][1] = 30;
-	lastDays[0][2] = 27;
-	lastDays[0][3] = 30;
-	lastDays[0][4] = 29;
-	lastDays[0][5] = 28;
-	lastDays[0][6] = 29;
-	lastDays[0][7] = 30;
-	lastDays[0][8] = 28;
-	lastDays[0][9] = 29;
-	lastDays[0][10] = 29;
-	lastDays[0][11] = 27;
-	lastDays[0][12] = 29;
-	lastDays[1][1] = 28;
-	lastDays[1][2] = 25;
-	lastDays[1][3] = 30;
-	lastDays[1][4] = 29;
-	lastDays[1][5] = 28;
 }

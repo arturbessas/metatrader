@@ -12,10 +12,10 @@ enum ENUM_INFORMATION_OUTPUT
    txt_file    = 1,  // The text file
   };
 //---
-input datetime                from_date   = D'2021.05.20 00:00:00';  // From date
-input datetime                to_date     = D'2021.05.31 19:00:00';       // To date
+input datetime                from_date   = D'2023.01.15 00:00:00';  // From date
+input datetime                to_date     = D'2023.03.21 19:00:00';       // To date
 input ENUM_INFORMATION_OUTPUT InpOutput   = txt_file;                // Information output
-input string                  InpFileName = "Deals.txt";      // File name (only if "Information output" == "The text file")
+input string                  InpFileName = "Detailed Orders.txt";      // File name (only if "Information output" == "The text file")
 //---
 int file_handle=0;
 //+------------------------------------------------------------------+

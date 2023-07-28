@@ -99,3 +99,10 @@ void add(int &v[], int x)
 	ArrayResize(v, size+1);
 	v[size] = x;
 }
+
+void add(double &v[], double x)
+{
+	int size = ArraySize(v);
+	ArrayResize(v, size+1);
+	v[size] = x;
+}

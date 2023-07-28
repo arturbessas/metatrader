@@ -12,7 +12,7 @@ enum ENUM_INFORMATION_OUTPUT
    txt_file    = 1,  // The text file
   };
 //---
-input datetime                from_date   = D'2021.08.01 00:00:00';  // From date
+input datetime                from_date   = D'2021.10.01 00:00:00';  // From date
 input datetime                to_date     = D'2021.12.26 19:00:00';       // To date
 input ENUM_INFORMATION_OUTPUT InpOutput   = txt_file;                // Information output
 input string                  InpFileName = "HistoryDeals.txt";      // File name (only if "Information output" == "The text file")
@@ -41,7 +41,7 @@ void OnStart()
 	     }
 	//---
 	   RequestTradeHistory();
-	   Sleep(1000);
+	   //Sleep(1000);
 	}
 }
 //+------------------------------------------------------------------+

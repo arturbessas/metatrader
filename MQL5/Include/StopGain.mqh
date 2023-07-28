@@ -30,25 +30,9 @@ class StopGain: public Node
 	
 	StopGain(void);
 	StopGain(double distance);
-	~StopGain(){};		
-};
-
-StopGain::StopGain(void){}
-
-StopGain::StopGain(double distance)
-{
-	Distance = distance;
-	tp_sent = false;
-}
-
-void StopGain::on_order(MqlTradeTransaction &trans)
-{
-	if(trans.order_state != ORDER_STATE_FILLED)
-		return;
-		
-	bool positioned = context.pos_info.Select(Symbol());
-		
-	if(positioned && !tp_sent)
+	~StopGain(){};
+	
+	void send_stop_gain_order(void)
 	{
 		double entry_price = context.pos_info.PriceOpen();
 		
@@ -59,13 +43,43 @@ void StopGain::on_order(MqlTradeTransaction &trans)
 		
 		tp_sent = true;
 		tp_order = context.trade.ResultOrder();
-	}
+	}		
+};
+
+StopGain::StopGain(void){}
+
+StopGain::StopGain(double distance)
+{
+	Distance = distance;
+	tp_sent = false;
+	tp_order = NULL;
+}
+
+void StopGain::on_order(MqlTradeTransaction &trans)
+{
+	if(trans.order_state != ORDER_STATE_FILLED)
+		return;
+		
+	bool positioned = context.pos_info.Select(Symbol());
+		
+	if(positioned && !tp_sent)
+		send_stop_gain_order();
 	
 	else if(!positioned)
 	{
 		tp_sent = false;
 		if(context.order.Select(tp_order))
 			context.trade.OrderDelete(tp_order);
+			tp_order = NULL;
+	}
+	
+	else if(context.order.Select(tp_order))
+	{
+		if(context.order.VolumeCurrent() != context.pos_info.Volume())
+		{
+			context.trade.OrderDelete(tp_order);
+			send_stop_gain_order();
+		}
 	}
 	
 }

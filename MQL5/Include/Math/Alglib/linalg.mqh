@@ -1,7 +1,7 @@
 //+------------------------------------------------------------------+
 //|                                                       linalg.mqh |
 //|            Copyright 2003-2012 Sergey Bochkanov (ALGLIB project) |
-//|                   Copyright 2012-2017, MetaQuotes Software Corp. |
+//|                             Copyright 2000-2023, MetaQuotes Ltd. |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
 //| Implementation of ALGLIB library in MetaQuotes Language 5        |
@@ -9034,7 +9034,7 @@ static void CEigenVDetect::InternalTREVC(CMatrixDouble &t,const int n,const int 
    CMatrixDouble temp22b;
    CMatrixInt    ipivot44;
 //--- create copy
-   double vselect[];
+   bool vselect[];
    ArrayResizeAL(vselect,ArraySize(cvselect));
    ArrayCopy(vselect,cvselect);
 //--- initialization

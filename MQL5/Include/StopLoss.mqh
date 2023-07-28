@@ -20,25 +20,29 @@ Context context;
 class StopLoss: public Node
 {	
 	public:
+	Context *context;
 	double Distance;
+	string Type;
 		
 	void on_trade(void);
 	
 	StopLoss(void);
-	StopLoss(double distance);
+	StopLoss(Context *cont, double distance, string type);
 	~StopLoss(){};		
 };
 
 StopLoss::StopLoss(void){}
 
-StopLoss::StopLoss(double distance)
+StopLoss::StopLoss(Context *cont, double distance, string type = "absolute")
 {
+	context = cont;
 	Distance = distance;
+	Type = type;
 }
 
 void StopLoss::on_trade(void)
 {
-	if(!context.pos_info.Select(Symbol()))
+	if(!context.pos_info.Select(context.stock_code))
 		return;
 		
 	double signal = 1;
@@ -46,12 +50,14 @@ void StopLoss::on_trade(void)
 	if(context.pos_info.PositionType() == POSITION_TYPE_SELL)
 		signal = -1;
 	
-	double entry_price = context.pos_info.PriceOpen();
+	double entry_price = context.entry_price;
 	double current_price = context.current_price();
 	
-	if((entry_price - current_price) * signal > Distance)
+	double distance = Type == "absolute" ? Distance : (entry_price * Distance/100);
+	
+	if((entry_price - current_price) * signal > distance)
 	{
-		context.trade.PositionClose(Symbol());
+		context.trade.PositionClose(context.stock_code);
 	}
 	
 }

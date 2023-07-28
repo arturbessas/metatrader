@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                     StopLoss.mqh |
+//|                                                     MarketStopGain.mqh |
 //|                        Artur Bessas (artur.bessas@smarttbot.com) |
 //|                                        https://www.smarttbot.com |
 //+------------------------------------------------------------------+
@@ -7,65 +7,57 @@
 #property link      "https://www.smarttbot.com"
 
 //apagar
-/*
+
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
 #include <Context.mqh>
-#include <Trade\OrderInfo.mqh>
 CTrade trade;
 CPositionInfo pos_info;
 Context context;
-COrderInfo order;
 */
 
 
 class MarketStopGain: public Node
 {	
 	public:
+	Context *context;
 	double Distance;
-	bool tp_sent;
-	ulong tp_order;
+	string Type;
 		
-	void on_order(MqlTradeTransaction &trans);
+	void on_trade(void);
 	
-	StopGain(void);
-	StopGain(double distance);
-	~StopGain(){};		
+	MarketStopGain(void);
+	MarketStopGain(Context *cont, double distance, string type);
+	~MarketStopGain(){};		
 };
 
-StopGain::StopGain(void){}
+MarketStopGain::MarketStopGain(void){}
 
-StopGain::StopGain(double distance)
+MarketStopGain::MarketStopGain(Context *cont, double distance, string type = "absolute")
 {
+	context = cont;
 	Distance = distance;
-	tp_sent = false;
+	Type = type;
 }
 
-void StopGain::on_order(MqlTradeTransaction &trans)
+void MarketStopGain::on_trade(void)
 {
-	if(trans.order_state != ORDER_STATE_FILLED)
+	if(!context.pos_info.Select(context.stock_code))
 		return;
 		
-	bool positioned = context.pos_info.Select(Symbol());
-		
-	if(positioned && !tp_sent)
-	{
-		double entry_price = context.pos_info.PriceOpen();
-		
-		if(context.pos_info.PositionType() == POSITION_TYPE_BUY)
-			context.trade.SellLimit(context.pos_info.Volume(), context.round_price(entry_price + Distance), Symbol(), 0, 0, ORDER_TIME_GTC, 0, "Stop Gain na compra");
-		else
-			context.trade.BuyLimit(context.pos_info.Volume(), context.round_price(entry_price - Distance), Symbol(), 0, 0, ORDER_TIME_GTC, 0, "Stop Gain na venda");
-		
-		tp_sent = true;
-		tp_order = context.trade.ResultOrder();
-	}
+	double signal = 1;
 	
-	else if(!positioned)
+	if(context.pos_info.PositionType() == POSITION_TYPE_SELL)
+		signal = -1;
+	
+	double avg_price = context.pos_info.PriceOpen();
+	double current_price = context.current_price();
+	
+	double distance = Type == "absolute" ? Distance : (avg_price * Distance/100));
+	
+	if((current_price - avg_price) * signal > distance)
 	{
-		tp_sent = false;
-		if(context.order.Select(tp_order))
-			context.trade.OrderDelete(tp_order);
+		context.trade.PositionClose(context.stock_code);
 	}
 	
 }

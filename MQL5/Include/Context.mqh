@@ -15,6 +15,7 @@
 
 
 #define TIMEOUT 60
+#define MAX_TRIES 5 
 
 struct TickInfo
 {
@@ -52,6 +53,8 @@ class Context
 	
 	void on_order(MqlTradeTransaction &trans);
 	void on_trade(void);
+	bool Buy(int volume, string comment);
+	bool Sell(int volume, string comment);
 	
 	string stock_code;
 	datetime start_time;
@@ -81,12 +84,13 @@ class Context
 	bool is_testing(void);
 	double get_daily_profit(void);
 	
-	Context(void);
+	Context(string stockCode);
 	~Context(){};		
 };
 
-Context::Context(void)
+Context::Context(string stockCode)
 {
+	stock_code = stockCode;
 	optimizer = new Optimizer();
 	start_time = TimeCurrent();
 	valid_strategy = true;
@@ -99,10 +103,8 @@ Context::Context(void)
 	on_order_nodes = new CArrayObj;
 }
 
-void Context::on_trade(string stockCode = Symbol())
+void Context::on_trade()
 {
-	stock_code = stockCode;
-	
 	SymbolInfoTick(stock_code, tick.tick);
 	
 	//apagar
@@ -129,7 +131,7 @@ bool Context::check_times(int h_ini, int m_ini, int h_end, int m_end)
 	
 	if(compare_time(tick.time, elim_hour, elim_min) >= 0)
 	{
-		trade.PositionClose(Symbol());
+		trade.PositionClose(stock_code);
 		return false;
 	}
 	
@@ -156,7 +158,7 @@ int Context::compare_time(MqlDateTime &mql_time, int hour, int min)
 
 void Context::check_new_bar()
 {
-	datetime current_candle_time = iTime(Symbol(), periodicity, 0);
+	datetime current_candle_time = iTime(stock_code, periodicity, 0);
 	if(last_candle_time != current_candle_time)
 	{
 		last_candle_time = current_candle_time;
@@ -171,17 +173,19 @@ void Context::check_new_bar()
 double Context::round_price(double price)
 {
 	double min_var = 0.01;
-	if(StringFind(Symbol(), "WIN") >= 0)
+	if(StringFind(stock_code, "WIN") >= 0)
 		min_var = 5.0;
-	else if(StringFind(Symbol(), "WDO") >= 0)
+	else if(StringFind(stock_code, "WDO") >= 0)
 		min_var = 0.5;
+	else
+		min_var = 0.1;
 	double ticks = price / min_var;
 	return round(ticks) * min_var;
 }
 
 void Context::check_entry_timeout(void)
 {
-	if(pos_info.Select(Symbol()))
+	if(pos_info.Select(stock_code))
 		return;
 	
 	for(int i = 0; i < OrdersTotal(); i++)
@@ -200,7 +204,7 @@ void Context::on_order(MqlTradeTransaction &trans)
 	if(trans.order_state == ORDER_STATE_FILLED)
 	{
 		entries_locked = false;
-		if(pos_info.Select(Symbol()))
+		if(pos_info.Select(stock_code))
 		{
 			if(entry_price == 0)
 				entry_price = trans.price;
@@ -238,12 +242,46 @@ double Context::get_daily_profit(void)
 		result += HistoryDealGetDouble(ticket, DEAL_PROFIT);
 	}
 	
-	if(pos_info.Select(Symbol()))
+	if(pos_info.Select(stock_code))
 	{
 		result += pos_info.Profit();
 	}
 	
 	return result;
+}
+
+bool Context::Buy(int volume, string comment="")
+{
+	int tries = 0;
+	uint result = 0;
+	while(tries < MAX_TRIES && result != 10009)
+	{
+		trade.Buy(volume, stock_code, tick.tick.ask, 0, 0, comment);
+		result = trade.ResultRetcode();
+		tries++;
+		if(result != 10009)
+		{
+			Sleep(100);
+		}
+	}
+	return result == 10009;
+}
+
+bool Context::Sell(int volume, string comment="")
+{
+	int tries = 0;
+	uint result = 0;
+	while(tries < MAX_TRIES && result != 10009)
+	{
+		trade.Sell(volume, stock_code, tick.tick.bid, 0, 0, comment);
+		result = trade.ResultRetcode();
+		tries++;
+		if(result != 10009)
+		{
+			Sleep(100);
+		}
+	}
+	return result == 10009;
 }
 
 void Context::set_periodicity(int p)
@@ -260,6 +298,8 @@ void Context::set_periodicity(int p)
 		periodicity = PERIOD_M30;
 	else if(p == 5)
 		periodicity = PERIOD_H1;
+	else if(p == 6)
+		periodicity = PERIOD_D1;
 	else
 		periodicity = PERIOD_M1;
 }

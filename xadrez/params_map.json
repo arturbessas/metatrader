@@ -1,0 +1,986 @@
+{
+    "ExpertTempoGrafico": {
+        "param": "periodicity",
+        "values": {
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "10": 10,
+            "12": 12,
+            "15": 15,
+            "20": 20,
+            "30": 30,
+            "16385": 60,
+            "16386": 120
+        }
+    },
+    "qtdadeOrdem": {
+        "param": "POS_numberOfStocksToTrade"
+    },
+    "envioOrdem": {
+        "param": "entryType",
+        "values": {
+            "1": "market",
+            "2": "limit"
+        }
+    },
+    "spreadLimite": {
+        "param": "LIMIT_spread"
+    },
+    "tempoExecucao": {
+        "param": "LIMIT_execution_timeout"
+    },
+    "expOrd": {
+        "param": "LIMIT_execution_timeout_action",
+        "values": {
+            "1": "EXECUTE",
+            "2": "CANCEL"
+        }
+    },
+    "stOperacao": {
+        "param": "entriesDirection",
+        "values": {
+            "1": "buy_only",
+            "2": "sell_only",
+            "3": "any"
+        }
+    },
+    "bloqNovaEntrada": {
+        "param": "usingBlockEntry",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "ativarMedia": {
+        "param": "CMAindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "mediaInversao": {
+        "param": "CMARULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaMedia": {
+        "param": "typeCMA",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUMedia": {
+        "param": "CMARULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "tipoMediaLonga": {
+        "param": "LONGMA_usingSMA",
+        "values": {
+            "1": "True",
+            "2": "False"
+        }
+    },
+    "periodoMediaLonga": {
+        "param": "LONGMA_periods"
+    },
+    "deslocamentoMediaLonga": {
+        "param": "LONGMADX_dx"
+    },
+    "valorUsadoMediaLonga": {
+        "param": "OBJLONGMA_object_usage_info",
+        "values": {
+            "1": "open",
+            "2": "close",
+            "3": "high",
+            "4": "low"
+        }
+    },
+    "tipoMediaCurta": {
+        "param": "SHORTMA_usingSMA",
+        "values": {
+            "1": "True",
+            "2": "False"
+        }
+    },
+    "periodoMediaCurta": {
+        "param": "SHORTMA_periods"
+    },
+    "deslocamentoMediaCurta": {
+        "param": "SHORTMADX_dx"
+    },
+    "valorUsadoMediaCurta": {
+        "param": "OBJSHORTMA_object_usage_info",
+        "values": {
+            "1": "open",
+            "2": "close",
+            "3": "high",
+            "4": "low"
+        }
+    },
+    "ativar3Media": {
+        "param": "TMAindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaTresMedia": {
+        "param": "typeTMA",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUso3Media": {
+        "param": "TMARule_COMP_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "alinhamentoTotal": {
+        "param": "TMARule_full_alignment_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "tipo3MediaCurta": {
+        "param": "TMARule_SHORTMA_usingSMA",
+        "values": {
+            "1": "true",
+            "2": "false"
+        }
+    },
+    "periodo3MediaCurta": {
+        "param": "TMARule_SHORTMA_periods"
+    },
+    "tipo3MediaInter": {
+        "param": "TMARule_INTERMA_usingSMA",
+        "values": {
+            "1": "true",
+            "2": "false"
+        }
+    },
+    "periodo3MediaInter": {
+        "param": "TMARule_INTERMA_periods"
+    },
+    "tipo3MediaLonga": {
+        "param": "TMARule_LONGMA_usingSMA",
+        "values": {
+            "1": "true",
+            "2": "false"
+        }
+    },
+    "periodo3MediaLonga": {
+        "param": "TMARule_LONGMA_periods"
+    },
+    "ativarHilo": {
+        "param": "HILOindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "hiloInversao": {
+        "param": "HILORULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaHilo": {
+        "param": "typeHILO",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoHilo": {
+        "param": "HILORULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "periodoHilo": {
+        "param": "HILO_periods"
+    },
+    "ativarMACD": {
+        "param": "MACDindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "macdInversao": {
+        "param": "MACDRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaMACD": {
+        "param": "typeMACD",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoMACD": {
+        "param": "MACDRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "valorUsadoMACD": {
+        "param": "OBJMACD_object_usage_info",
+        "values": {
+            "1": "open",
+            "2": "close",
+            "3": "high",
+            "4": "low"
+        }
+    },
+    "tipoMediaMACD": {
+        "param": "MACD_usingEMA",
+        "values": {
+            "1": "False",
+            "2": "True"
+        }
+    },
+    "periodoMediaCurtaMc": {
+        "param": "MACD_periodsShort"
+    },
+    "periodoMediaLongaMc": {
+        "param": "MACD_periodsLong"
+    },
+    "periodoMediaSinal": {
+        "param": "MACD_periodsDiff"
+    },
+    "filtroMACD": {
+        "param": "macdUsingFilter",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorFiltroMACD": {
+        "param": "MACDFILTER_value"
+    },
+    "ativarADX": {
+        "param": "ADXindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "adxInversao": {
+        "param": "ADXRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaADX": {
+        "param": "typeADX",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoADX": {
+        "param": "ADXRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "periodoDI": {
+        "param": "ADX_periods"
+    },
+    "periodoSuavizadorADX": {
+        "param": "ADX_smooth"
+    },
+    "filtroValorMinimoADX": {
+        "param": "adxMinFilter_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorMinimoADX": {
+        "param": "ADXCOMPMIN_value"
+    },
+    "filtroValorMaximoADX": {
+        "param": "adxMaxFilter_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorMaximoADX": {
+        "param": "ADXCOMPMAX_value"
+    },
+    "filtroAumDimTendenciaADX": {
+        "param": "adxTrendFilter_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "operacaoTendencia": {
+        "param": "adxTrendFilter_way",
+        "values": {
+            "1": "True",
+            "2": "False"
+        }
+    },
+    "ativarEstocastico": {
+        "param": "STOCHindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "estocasticoInversao": {
+        "param": "STOCHRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaEstocastico": {
+        "param": "typeSTOCH",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoEstocastico": {
+        "param": "STOCHRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "periodosEstoc": {
+        "param": "STOCH_kPeriods"
+    },
+    "periodosSuavizadorK": {
+        "param": "STOCH_dPeriods"
+    },
+    "periodosSuavizadorD": {
+        "param": "STOCH_smoothingPeriods"
+    },
+    "filtroSobrecompradoVendidoEstocastico": {
+        "param": "STOCHFILTER_usingLevelsFilter",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorSobreVendido": {
+        "param": "STOCHFILTERLOW_value"
+    },
+    "valorSobreComprado": {
+        "param": "STOCHFILTERHIGH_value"
+    },
+    "ativarVWAP": {
+        "param": "VWAPindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "vwapInversao": {
+        "param": "VWAPRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaVWAP": {
+        "param": "typeVWAP",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoVWAP": {
+        "param": "vwapMode",
+        "values": {
+            "0": "1",
+            "1": "2",
+            "2": "3"
+        }
+    },
+    "ativarIFR": {
+        "param": "RSIindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "ifrInversao": {
+        "param": "RSIRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaIFR": {
+        "param": "typeRSI",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoIFR": {
+        "param": "RSIRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "valorUsadoIFR": {
+        "param": "OBJRSI_object_usage_info",
+        "values": {
+            "1": "open",
+            "2": "close",
+            "3": "high",
+            "4": "low"
+        }
+    },
+    "periodosIFR": {
+        "param": "RSI_periods"
+    },
+    "valorSobreVendidoIFR": {
+        "param": "RSIRULELOWLEVEL_value"
+    },
+    "valorSobreCompradoIFR": {
+        "param": "RSIRULEHIGHLEVEL_value"
+    },
+    "ativarBBollinger": {
+        "param": "BBindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "bBollingerInversao": {
+        "param": "BBRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaBBollinger": {
+        "param": "typeBB",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoBBollinger": {
+        "param": "BBRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "valorUsadoBBollinger": {
+        "param": "OBJBB_object_usage_info",
+        "values": {
+            "1": "open",
+            "2": "close",
+            "3": "high",
+            "4": "low"
+        }
+    },
+    "periodosBBollinger": {
+        "param": "BB_periods"
+    },
+    "multiplicadorDesvioBBollinger": {
+        "param": "BB_multiplier"
+    },
+    "ativarStopATR": {
+        "param": "ATRindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "stopATRInversao": {
+        "param": "ATRRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaStopATR": {
+        "param": "typeATR",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoStopATR": {
+        "param": "ATRRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "tipoMediaStopATR": {
+        "param": "ATR_average_type",
+        "values": {
+            "1": "simples",
+            "2": "wilder"
+        }
+    },
+    "periodosMediaStopATR": {
+        "param": "ATR_periods"
+    },
+    "multiplicadorDesvioStopATR": {
+        "param": "ATR_multiplier"
+    },
+    "ativarSARParabolico": {
+        "param": "SARindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "sarInversao": {
+        "param": "SARRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaSAR": {
+        "param": "typeSAR",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoSAR": {
+        "param": "SARRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "sarFatorAceleracao": {
+        "param": "ATR_SAR_alphamultiplier"
+    },
+    "sarValorIncremento": {
+        "param": "SAR_increment"
+    },
+    "sarValorMaximoFator": {
+        "param": "SAR_max_alpha"
+    },
+    "ativarOBV": {
+        "param": "OBVindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "obvInversao": {
+        "param": "OBVRULE_invert",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaOBV": {
+        "param": "typeOBV",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoOBV": {
+        "param": "OBVRULE_isFilter",
+        "values": {
+            "0": "True",
+            "1": "False"
+        }
+    },
+    "periodoOBV": {
+        "param": "OBVRULE_trend_period"
+    },
+    "ativarToposFundos": {
+        "param": "TABindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaToposFundos": {
+        "param": "typeTAB",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "formaUsoToposFundos": {
+        "param": "TABRULE_isFilter",
+        "values": {
+            "0": "true",
+            "1": "false"
+        }
+    },
+    "periodoToposFundos": {
+        "param": "TAB_periods"
+    },
+    "ativarPontosPivot": {
+        "param": "PPindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "pontosPivotContraTendencia": {
+        "param": "PPRule_using_countertrend",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "opcaoEntradaPontosPivot": {
+        "param": "typePP",
+        "values": {
+            "1": "entry_only",
+            "2": "exit_only",
+            "3": "both"
+        }
+    },
+    "distanciaDXSuporteResistencia": {
+        "param": "PPRule_activation_DX"
+    },
+    "suporte1": {
+        "param": "PPRule_S1_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "suporte2": {
+        "param": "PPRule_S2_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "resistencia1": {
+        "param": "PPRule_R1_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "resistencia2": {
+        "param": "PPRule_R2_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "ativarFiltroVolume": {
+        "param": "VOL_AVGindicator_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "periodosMediaVolume": {
+        "param": "VOLMA_periods"
+    },
+    "tipoMediaVolume": {
+        "param": "VOLMA_usingSMA",
+        "values": {
+            "1": "true",
+            "2": "false"
+        }
+    },
+    "operarSegunda": {
+        "param": "WEEKDAY_FILTER_monday",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "operarTerca": {
+        "param": "WEEKDAY_FILTER_tuesday",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "operarQuarta": {
+        "param": "WEEKDAY_FILTER_wednesday",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "operarQuinta": {
+        "param": "WEEKDAY_FILTER_thursday",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "operarSexta": {
+        "param": "WEEKDAY_FILTER_friday",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "tipoSaidaIndicador": {
+        "param": "stopsByTI",
+        "values": {
+            "1": "all",
+            "2": "one"
+        }
+    },
+    "habilitarReversao": {
+        "param": "POS_activeReversions",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "stopFixoPerda": {
+        "param": "SL_usingStop",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "precoRefStopLoss": {
+        "param": "SL_using_context_entry",
+        "values": {
+            "0": "false",
+            "1": "true"
+        }
+    },
+    "tipoStopPerda": {
+        "param": "SL_stopLossType",
+        "values": {
+            "1": "A",
+            "2": "%"
+        }
+    },
+    "valorStopPerda": {
+        "param": "SL_stopLossDiff"
+    },
+    "stopFixoGain": {
+        "param": "SG_usingStop",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "tipoStopGain": {
+        "param": "SG_stopGainType",
+        "values": {
+            "1": "A",
+            "2": "%"
+        }
+    },
+    "valorStopGain": {
+        "param": "SG_stopGainDiff"
+    },
+    "tipoOrdemStop": {
+        "param": "usingLimitStopGain",
+        "values": {
+            "1": "False",
+            "2": "True"
+        }
+    },
+    "stopMovelGain": {
+        "param": "SM_usingStop",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "precoRefTrailing": {
+        "param": "SM_using_context_entry",
+        "values": {
+            "0": "false",
+            "1": "true"
+        }
+    },
+    "tipoStopMovelG": {
+        "param": "SM_stopMovelType",
+        "values": {
+            "1": "A",
+            "2": "%"
+        }
+    },
+    "valorStopMovelG": {
+        "param": "SM_stopMovelBegin"
+    },
+    "valorDistanciaStopMovelG": {
+        "param": "SM_stopMovelDistance"
+    },
+    "breakEven": {
+        "param": "BREAKEVEN_using",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "stopDiarioPerda": {
+        "param": "DAILYSTOPS_usingGlobalStopLoss",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorDiarioPerda": {
+        "param": "DAILYSTOPS_globalStopLoss"
+    },
+    "stopDiarioGanho": {
+        "param": "DAILYSTOPS_usingGlobalStopGain",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorDiarioGanho": {
+        "param": "DAILYSTOPS_globalStopGain"
+    },
+    "stopDiarioTrades": {
+        "param": "TRADES_usingLimit",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorDiarioTrades": {
+        "param": "TRADES_dx"
+    },
+    "tipoParada": {
+        "param": "TRADES_allow",
+        "values": {
+            "1": "positive",
+            "2": "negative",
+            "3": "any"
+        }
+    },
+    "breakEvenFinanceiro": {
+        "param": "DAILYBREAKEVEN_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "valorMinimoAtivarBreakEven": {
+        "param": "DAILYBREAKEVEN_activation_value"
+    },
+    "valorDeclinioBreakEven": {
+        "param": "DAILYBREAKEVEN_distance"
+    },
+    "ativarInicioHorarioAbrirPosicao": {
+        "param": "FIRSTTIMEBLOCK_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "horaInicioAbrirPosicao": {
+        "param": "FIRSTTIMEBLOCK_time"
+    },
+    "ativarFinalHorarioAbrirPosicao": {
+        "param": "LASTTIMEBLOCK_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "horaFinalAbrirPosicao": {
+        "param": "LASTTIMEBLOCK_time"
+    },
+    "ativarJanela1": {
+        "param": "WINDOWBLOCK1_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "permitirReversaoJanela1": {
+        "param": "WINDOWBLOCK1_allow_position_increase_and_reversions",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "horaInicioJanela1": {
+        "param": "WINDOWBLOCK1_time1"
+    },
+    "horaFinalJanela1": {
+        "param": "WINDOWBLOCK1_time2"
+    },
+    "ativarJanela2": {
+        "param": "WINDOWBLOCK2_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "permitirReversaoJanela2": {
+        "param": "WINDOWBLOCK2_allow_position_increase_and_reversions",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "horaInicioJanela2": {
+        "param": "WINDOWBLOCK2_time1"
+    },
+    "horaFinalJanela2": {
+        "param": "WINDOWBLOCK2_time2"
+    },
+    "ativarApenasDayTrade": {
+        "param": "DAYTRADE_enabled",
+        "values": {
+            "true": "true",
+            "false": "false"
+        }
+    },
+    "horaZerar": {
+        "param": "DAYTRADE_elim_time"
+    }
+}

@@ -1,0 +1,4 @@
+Seção de aumento de posição
+Seção de saídas parciais
+Lógica para time params. Terminados com time?
+Preencher parâmetros default da tangram e construir novo arquivo em cima dele, para não eprdernenhm

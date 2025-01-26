@@ -21,7 +21,7 @@
 #property indicator_label3  "Bands lower"
 //--- input parametrs
 input int     InpBandsPeriod=23;       // Period
-
+input bool    Percentual = false;      // DX percentual
 input double  InpBandsDeviations=7.0;  // DX
 //--- global variables
 int           ExtBandsPeriod,ExtBandsShift;
@@ -107,10 +107,22 @@ int OnCalculate(const int rates_total,
      		prev_value = ExtMLBuffer[i-1];
       //--- middle line
       ExtMLBuffer[i]=ExponentialMA(i,ExtBandsPeriod,prev_value,price);
-      //--- upper line
-      ExtTLBuffer[i]=ExtMLBuffer[i]+ExtBandsDeviations;
-      //--- lower line
-      ExtBLBuffer[i]=ExtMLBuffer[i]-ExtBandsDeviations;
+      
+      if (Percentual)
+      {
+         //--- upper line
+         ExtTLBuffer[i]=ExtMLBuffer[i] * (1+ExtBandsDeviations/100);
+         //--- lower line
+         ExtBLBuffer[i]=ExtMLBuffer[i] * (1-ExtBandsDeviations/100);
+      }
+      else
+      {
+         //--- upper line
+         ExtTLBuffer[i]=ExtMLBuffer[i]+ExtBandsDeviations;
+         //--- lower line
+         ExtBLBuffer[i]=ExtMLBuffer[i]-ExtBandsDeviations;
+      }
+      
      }
 //--- OnCalculate done. Return new prev_calculated.
    return(rates_total);

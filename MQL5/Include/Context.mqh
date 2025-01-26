@@ -12,6 +12,7 @@
 #include <Trade\OrderInfo.mqh>
 #include <Optimizer.mqh>
 #include <Object.mqh>
+#include <Basic.mqh>
 
 
 #define TIMEOUT 60
@@ -41,6 +42,13 @@ class Rule: public Node
 	~Rule(){};
 };
 
+struct Position
+{
+	double volume;
+	double entry_price;
+	double average_price;
+	ulong positions[];
+};
 
 class Context
 {	
@@ -51,12 +59,15 @@ class Context
 	CPositionInfo pos_info;
 	Optimizer *optimizer;
 	
-	void on_order(MqlTradeTransaction &trans);
+	//void on_order(MqlTradeTransaction &trans);
 	void on_trade(void);
-	bool Buy(int volume, string comment);
-	bool Sell(int volume, string comment);
+	bool Buy(double volume, string comment);
+	bool Sell(double volume, string comment);
+	bool ClosePositionByTicket(ulong ticket, string comment);
+	bool ClosePositions(string comment);
 	
 	string stock_code;
+	ulong magic_number;
 	datetime start_time;
 	datetime last_candle_time;
 	bool valid_strategy;
@@ -64,15 +75,21 @@ class Context
 	bool entries_locked;
 	bool daily_locked;
 	TickInfo tick;
-	double entry_price;
+	ulong pending_order;
+	Position position;
+
 	ENUM_TIMEFRAMES periodicity;
 	
 	CArrayObj *on_trade_nodes;
 	CArrayObj *on_order_nodes;
 	
 	
-	double current_price(void) {return tick.tick.last;}
+	double current_price(void) {return tick.tick.bid;}
 	bool is_new_day(void) {return optimizer.is_new_day;}
+	bool is_positioned(void) {return position.volume != 0;}
+	bool is_bought(void) {return position.volume > 0;}
+	bool is_sold(void) {return position.volume < 0;}
+	int positions_quantity(void) {return ArraySize(position.positions);}
 	
 	bool check_times(int h_ini, int m_ini, int h_end, int m_end);
 	int compare_time(MqlDateTime &mql_time, int hour, int min);
@@ -84,31 +101,67 @@ class Context
 	bool is_testing(void);
 	double get_daily_profit(void);
 	
-	Context(string stockCode);
-	~Context(){};		
+	
+	Context(string stockCode, ulong magicNumber);
+	~Context(){};
+	
+	private:
+	void update_orders(void);
+	void reset_position(void);
+	void update_position(ulong ticket);
+	void load_positions(void);
 };
 
-Context::Context(string stockCode)
+Context::Context(string stockCode, ulong magicNumber)
 {
 	stock_code = stockCode;
+	magic_number = magicNumber;
+	trade.SetExpertMagicNumber(magic_number);
 	optimizer = new Optimizer();
 	start_time = TimeCurrent();
 	valid_strategy = true;
 	last_candle_time = 0;
 	entries_locked = false;
 	daily_locked = false;
-	entry_price = 0;
+	pending_order = 0;
 	
 	on_trade_nodes = new CArrayObj;
 	on_order_nodes = new CArrayObj;
+	
+	load_positions();
+	
+	logger("Successfull initialization. Number of positions loaded: " + IntegerToString(positions_quantity()));
+}
+
+void Context::load_positions(void)
+{  
+   int total = PositionsTotal();
+   for (int i = 0; i < total; i++)
+   {
+      if (!pos_info.SelectByIndex(i))
+         continue;
+      
+      if (pos_info.Symbol() != stock_code || pos_info.Magic() != magic_number)
+         continue;
+      
+      logger("Initial position identified. Loading positions...");
+      
+      update_position(pos_info.Ticket());      
+   }
 }
 
 void Context::on_trade()
 {
-	SymbolInfoTick(stock_code, tick.tick);
-	
-	//apagar
-	double last = tick.tick.last;
+   // check for order updates
+   if (pending_order)
+      update_orders();
+
+   ResetLastError();
+	if (!SymbolInfoTick(stock_code, tick.tick))
+	{
+	   logger("Tick error: " + IntegerToString(GetLastError()));
+	   return;
+	}
 	
 	//optmization checks
 	optimizer.on_trade();
@@ -123,23 +176,111 @@ void Context::on_trade()
 	}
 }
 
+void Context::update_orders(void)
+{
+   // update last sent order status
+   if (pending_order && HistoryOrderSelect(pending_order))
+   {      
+      // check order state
+      if (HistoryOrderGetInteger(pending_order, ORDER_STATE) != ORDER_STATE_FILLED)
+      {
+         logger("Error! Order in history but not executed. Id: " + IntegerToString(pending_order));
+         pending_order = 0;
+         return;
+      }
+      
+      // update position info
+      ulong position_ticket = HistoryOrderGetInteger(pending_order,ORDER_POSITION_ID);      
+      update_position(position_ticket);      
+      
+      // reset pending order
+      pending_order = 0;
+   }
+}
+
+void Context::update_position(ulong ticket)
+{
+   if (!pos_info.SelectByTicket(ticket))
+   {
+      logger("Error selecting position. Something went wrong. Id: " + IntegerToString(ticket));
+      return;
+   }
+   
+   append(position.positions, ticket);
+   
+   // update entry price if not positioned
+   if (position.entry_price == 0)      
+      position.entry_price = pos_info.PriceOpen();
+   // update average price
+   position.average_price = (MathAbs(position.volume)*position.average_price + pos_info.Volume()*pos_info.PriceOpen()) / (MathAbs(position.volume) + pos_info.Volume());
+   // update volume
+   if (pos_info.PositionType() == POSITION_TYPE_BUY)
+      position.volume += pos_info.Volume();
+   else if (pos_info.PositionType() == POSITION_TYPE_SELL)
+      position.volume -= pos_info.Volume();
+      
+   string msg = StringFormat("Position updated according position ticket %d. \nEntry price: %f \nAverage Price: %f \nVolume: %f",
+                              ticket, position.entry_price, position.average_price, position.volume);
+      
+   logger(msg);
+}
+
+bool Context::ClosePositions(string comment)
+{
+   bool success = true;
+   for(int i = 0; i < ArraySize(position.positions); i++)
+   {
+      success = success && ClosePositionByTicket(position.positions[i], comment);
+   }
+   
+   if (success)
+   {
+      reset_position();
+      
+      logger("Position reset after " + comment);
+   }
+   
+   
+   return success;
+}
+
+bool Context::ClosePositionByTicket(ulong ticket, string comment)
+{
+   int tries = 0;
+	uint result = 0;
+   while(tries < MAX_TRIES && result != 10009)
+	{
+		trade.PositionClose(ticket, comment);
+		result = trade.ResultRetcode();
+		tries++;
+		if(result != 10009)
+		{
+			Sleep(100);
+		}
+	}
+	if (result == 10009)
+	{
+	   return true;
+	}
+	else
+	{
+	   logger("Error closing position. Ticket: " + IntegerToString(ticket) + trade.ResultRetcodeDescription());
+	   return false;
+	}
+}
+
+void Context::reset_position(void)
+{
+   position.entry_price = 0;
+   position.average_price = 0;
+   position.volume = 0;
+   ArrayFree(position.positions);
+}
+
 bool Context::check_times(int h_ini, int m_ini, int h_end, int m_end)
 {
 	check_entry_timeout();
 		
-	TimeToStruct(tick.tick.time, tick.time);	
-	
-	if(compare_time(tick.time, elim_hour, elim_min) >= 0)
-	{
-		trade.PositionClose(stock_code);
-		return false;
-	}
-	
-	if(compare_time(tick.time, h_ini, m_ini) < 0)
-		return false;
-	
-	if(compare_time(tick.time, h_end, m_end) > 0)
-		return false;	
 		
 	check_new_bar();
 		
@@ -199,6 +340,7 @@ void Context::check_entry_timeout(void)
 	}	 
 }
 
+/*
 void Context::on_order(MqlTradeTransaction &trans)
 {
 	if(trans.order_state == ORDER_STATE_FILLED)
@@ -219,6 +361,7 @@ void Context::on_order(MqlTradeTransaction &trans)
 		node.on_order((MqlTradeTransaction)trans);
 	}
 }
+*/
 
 bool Context::is_testing(void)
 {
@@ -250,8 +393,13 @@ double Context::get_daily_profit(void)
 	return result;
 }
 
-bool Context::Buy(int volume, string comment="")
+bool Context::Buy(double volume, string comment="")
 {
+   if (pending_order != 0)
+   {
+      logger("Blocking order due to pending order. New order reason: " + comment);
+      return false;
+   }
 	int tries = 0;
 	uint result = 0;
 	while(tries < MAX_TRIES && result != 10009)
@@ -264,11 +412,25 @@ bool Context::Buy(int volume, string comment="")
 			Sleep(100);
 		}
 	}
-	return result == 10009;
+	if (result == 10009)
+	{
+	   pending_order = trade.ResultOrder();
+	   return true;
+	}
+	else
+	{
+	   logger("Order couldn't be placed. Code: " + trade.ResultRetcodeDescription());
+	   return false;
+	}
 }
 
-bool Context::Sell(int volume, string comment="")
+bool Context::Sell(double volume, string comment="")
 {
+   if (pending_order != 0)
+   {
+      logger("Blocking order due to pending order. New order reason: " + comment);
+      return false;
+   }
 	int tries = 0;
 	uint result = 0;
 	while(tries < MAX_TRIES && result != 10009)
@@ -281,7 +443,16 @@ bool Context::Sell(int volume, string comment="")
 			Sleep(100);
 		}
 	}
-	return result == 10009;
+	if (result == 10009)
+	{
+	   pending_order = trade.ResultOrder();
+	   return true;
+	}
+	else
+	{
+	   logger("Order couldn't be placed. Code: " + trade.ResultRetcodeDescription());
+	   return false;
+	}
 }
 
 void Context::set_periodicity(int p)
@@ -316,4 +487,11 @@ ENUM_APPLIED_PRICE Context::get_price_type(price_type_enum p)
 		return PRICE_LOW;	
 	else
 		return PRICE_CLOSE;
+}
+
+void logger(string msg)
+{
+   if (MQLInfoInteger(MQL_TESTER) && !MQLInfoInteger(MQL_VISUAL_MODE))
+      return;
+	PrintFormat("id: %d - %s", magic_number, msg);
 }

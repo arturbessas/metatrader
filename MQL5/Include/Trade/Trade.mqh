@@ -99,7 +99,7 @@ public:
    bool              PositionModify(const string symbol,const double sl,const double tp);
    bool              PositionModify(const ulong ticket,const double sl,const double tp);
    bool              PositionClose(const string symbol,const ulong deviation=ULONG_MAX);
-   bool              PositionClose(const ulong ticket,const ulong deviation=ULONG_MAX);
+   bool              PositionClose(const ulong ticket, string comment, const ulong deviation=ULONG_MAX);
    bool              PositionCloseBy(const ulong ticket,const ulong ticket_by);
    bool              PositionClosePartial(const string symbol,const double volume,const ulong deviation=ULONG_MAX);
    bool              PositionClosePartial(const ulong ticket,const double volume,const ulong deviation=ULONG_MAX);
@@ -465,7 +465,7 @@ bool CTrade::PositionClose(const string symbol,const ulong deviation)
 //+------------------------------------------------------------------+
 //| Close specified opened position                                  |
 //+------------------------------------------------------------------+
-bool CTrade::PositionClose(const ulong ticket,const ulong deviation)
+bool CTrade::PositionClose(const ulong ticket, string comment, const ulong deviation)
   {
 //--- check stopped
    if(IsStopped(__FUNCTION__))
@@ -499,6 +499,7 @@ bool CTrade::PositionClose(const ulong ticket,const ulong deviation)
    m_request.volume   =PositionGetDouble(POSITION_VOLUME);
    m_request.magic    =m_magic;
    m_request.deviation=(deviation==ULONG_MAX) ? m_deviation : deviation;
+   m_request.comment = comment;
 //--- close position
    return(OrderSend(m_request,m_result));
   }

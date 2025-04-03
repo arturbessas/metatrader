@@ -6,6 +6,8 @@
 //+------------------------------------------------------------------+
 //| Script program start function                                    |
 //+------------------------------------------------------------------+
+#property script_show_inputs
+
 enum ENUM_INFORMATION_OUTPUT
   {
    experts_tab = 0,  // The "Experts" tab
@@ -13,7 +15,7 @@ enum ENUM_INFORMATION_OUTPUT
   };
 //---
 input datetime                from_date   = D'2020.01.15 00:00:00';  // From date
-input datetime                to_date     = D'2025.03.21 19:00:00';       // To date
+input datetime                to_date     = D'2028.03.21 19:00:00';       // To date
 ENUM_INFORMATION_OUTPUT InpOutput   = txt_file;                // Information output
 input string                  InpFileName = "Detailed Orders.csv";      // File name (only if "Information output" == "The text file")
 //---
@@ -81,7 +83,7 @@ void RequestTrade()
       long     o_time_done_msc   =HistoryOrderGetInteger(deal_order, ORDER_TIME_DONE_MSC);
       long     o_type_filling    =HistoryOrderGetInteger(deal_order, ORDER_TYPE_FILLING);
       long     o_type_time       =HistoryOrderGetInteger(deal_order, ORDER_TYPE_TIME);
-      long     o_magic           =HistoryOrderGetInteger(deal_order, ORDER_MAGIC);
+      ulong    o_magic           =HistoryOrderGetInteger(deal_order, ORDER_MAGIC);
       long     o_reason          =HistoryOrderGetInteger(deal_order, ORDER_REASON);
       long     o_position_id     =HistoryOrderGetInteger(deal_order, ORDER_POSITION_ID);
       long     o_position_by_id  =HistoryOrderGetInteger(deal_order, ORDER_POSITION_BY_ID);

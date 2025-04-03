@@ -15,12 +15,23 @@ struct position
 };
 
 void OnStart()
-  {
-      position s;
-      s.volume = 2;
-      Print(s.average_price, s.entry_price, s.volume);
-      
-      
+{
+   datetime current_candle_time = TimeCurrent() / PeriodSeconds(PERIOD_M1);
+   Print(TimeCurrent());
+   Print(current_candle_time);
    
-  }
+   for(int i=0;i<20;i++)
+     {
+         Sleep(5000);
+   
+   current_candle_time = TimeCurrent() / PeriodSeconds(PERIOD_M1);
+   Print(TimeCurrent());
+   Print(current_candle_time);
+     }
+   
+   
+   
+   
+   
+}
 //+------------------------------------------------------------------+

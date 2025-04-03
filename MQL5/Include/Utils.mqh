@@ -28,7 +28,7 @@ void update_position_info(MqlTradeTransaction &trans, posManager &p)
 }
 
 
-void logger(string msg)
+void logger.info(string msg)
 {
 	PrintFormat("id: %d - %s", magic_number, msg);
 }

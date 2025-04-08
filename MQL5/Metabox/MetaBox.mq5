@@ -78,15 +78,18 @@ void handle_new_deal(ulong deal_ticket)
    Print("Error: ", GetLastError());
 
    client.send_new_deal(
-      deal_ticket,  // ticket
-      HistoryDealGetInteger(deal_ticket, DEAL_MAGIC),  // magic_number
-      HistoryDealGetInteger(deal_ticket, DEAL_POSITION_ID),  // position_id
-      HistoryDealGetString(deal_ticket, DEAL_SYMBOL),  // symbol
-      HistoryDealGetInteger(deal_ticket, DEAL_TIME_MSC),  // time_msc
-      EnumToString((ENUM_DEAL_TYPE)HistoryDealGetInteger(deal_ticket, DEAL_TYPE)),  // type
-      EnumToString((ENUM_DEAL_REASON)HistoryDealGetInteger(deal_ticket, DEAL_REASON)),  // reason
-      HistoryDealGetDouble(deal_ticket, DEAL_VOLUME),  // volume
-      HistoryDealGetDouble(deal_ticket, DEAL_PRICE),  // price
-      EnumToString((ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY))  // entry
+      deal_ticket,                                                                           // ticket
+      HistoryDealGetInteger(deal_ticket, DEAL_MAGIC),                                        // magic_number
+      HistoryDealGetInteger(deal_ticket, DEAL_POSITION_ID),                                  // position_id
+      HistoryDealGetString(deal_ticket, DEAL_SYMBOL),                                        // symbol
+      HistoryDealGetInteger(deal_ticket, DEAL_TIME_MSC),                                     // time_msc
+      EnumToString((ENUM_DEAL_TYPE)HistoryDealGetInteger(deal_ticket, DEAL_TYPE)),           // type
+      EnumToString((ENUM_DEAL_REASON)HistoryDealGetInteger(deal_ticket, DEAL_REASON)),       // reason
+      HistoryDealGetDouble(deal_ticket, DEAL_VOLUME),                                        // volume
+      HistoryDealGetDouble(deal_ticket, DEAL_PRICE),                                         // price
+      EnumToString((ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY)),         // entry
+      HistoryDealGetDouble(deal_ticket, DEAL_PROFIT),                                        // profit
+      HistoryDealGetDouble(deal_ticket, DEAL_SWAP),                                          // swap
+      HistoryDealGetDouble(deal_ticket, DEAL_COMMISSION)                                     // commission
    );
 }

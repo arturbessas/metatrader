@@ -106,7 +106,8 @@ class Context
 	void check_entry_timeout();
 	bool is_testing(void);
 	double get_daily_profit(void);
-	
+	double get_position_price(ulong position_ticket);
+
 	
 	Context(string stockCode, ulong magicNumber, ENUM_TIMEFRAMES Periodicity);
 	~Context(){};
@@ -526,4 +527,12 @@ bool Context::Sell(double volume, string comment="")
 	   logger.info("Order couldn't be placed. Code: " + trade.ResultRetcodeDescription());
 	   return false;
 	}
+}
+
+double Context::get_position_price(ulong position_ticket)
+{
+	if(!pos_info.SelectByTicket(position_ticket))
+		logger.error(StringFormat("%s: ticket: %lld.", __FUNCTION__, position_ticket));
+		
+	return pos_info.PriceOpen();
 }

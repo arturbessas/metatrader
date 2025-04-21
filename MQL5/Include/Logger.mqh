@@ -46,6 +46,6 @@ void Logger::debug(string message)
 void Logger::error(string message)
 {
    print("ERROR! " + message);
-   if (MQLInfoInteger(MQL_TESTER))
-      ExpertRemove();
+	Alert(StringFormat("%llu: %s", magic_number, message));
+   ExpertRemove();
 }

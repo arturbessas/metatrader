@@ -1,3 +1,5 @@
 MQL5/Files/
 MQL5/Logs/
 MQL5/Profiles/
+*.dat
+*.DS_Store

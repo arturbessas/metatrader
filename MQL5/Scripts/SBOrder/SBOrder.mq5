@@ -46,6 +46,9 @@ void OnStart()
 	     }
 	//---
 	   RequestTrade();
+	   
+	   string full_path = TerminalInfoString(TERMINAL_DATA_PATH) + "\\MQL5\\Files\\" + InpFileName;
+      Print("Ordens salvas em: ", full_path);
 	
 }
 //+------------------------------------------------------------------+
@@ -70,7 +73,7 @@ void RequestTrade()
      	string text = "";
       //--- try to get deals ticket__deal
       deal_order = HistoryOrderGetTicket(i);
-      Print(deal_order, i);
+      // Print(deal_order, i);
       //if(HistoryOrderSelect(deal_order))
         
       long     o_ticket          =HistoryOrderGetInteger(deal_order, ORDER_TICKET);
@@ -109,7 +112,7 @@ void RequestTrade()
       string str_o_type_time        =TimeToString((datetime)o_type_time,TIME_DATE|TIME_MINUTES|TIME_SECONDS);
       string str_o_reason           =EnumToString((ENUM_ORDER_REASON)o_reason);
 
-         text=StringFormat("%d,%d,%d,%s,%s,%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%s",
+         text=StringFormat("%lld,%llu,%lld,%s,%s,%s,%s,%s,%.2f,%.2f,%.2f,%.2f,%s,%s",
          						o_ticket, o_magic, o_position_id, str_o_time_setup, str_o_type, str_o_state, str_o_time_done, o_symbol, o_volume_initial,
          						o_volume_current, o_open_price, o_price_current, str_o_reason, o_comment );
          

@@ -98,6 +98,7 @@ class Context
 	double entry_price(void) {return position.entry_price;}
 	double number_of_stocks_to_trade(void) {return number_of_stocks;}
 	double average_price(void) {return position.average_price;}
+	datetime today(void) {return int(TimeCurrent() / (60 * 60 * 24)) * (60 * 60 * 24);}
 	
 	bool check_times(int h_ini, int m_ini, int h_end, int m_end);
 	int compare_time(MqlDateTime &mql_time, int hour, int min);

@@ -89,3 +89,15 @@ bool is_sell_order_type(ENUM_ORDER_TYPE order_type)
    
    return false;
 }
+
+#define SECONDS_IN_A_DAY (60*60*24)
+
+datetime DatetimeToDate(datetime dt)
+{
+	return int(dt / SECONDS_IN_A_DAY) * SECONDS_IN_A_DAY;
+}
+
+datetime DatetimeToTime(datetime dt)
+{
+	return dt % SECONDS_IN_A_DAY;
+}

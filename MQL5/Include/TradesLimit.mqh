@@ -6,7 +6,7 @@
 #property copyright "Artur Bessas (artur.bessas@smarttbot.com)"
 #property link      "https://www.smarttbot.com"
 
-//apagar
+
 /*
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
@@ -20,27 +20,35 @@ Context context;
 class TradesLimit: public Node
 {	
 	public:
-	int Value;
+	int limit;
+	int current_quantity;
 		
-	void on_order(MqlTradeTransaction &trans);
+	void on_deal(Deal &deal);
+	void on_daily_reset(void);
 	
 	TradesLimit(void);
-	TradesLimit(int value);
+	TradesLimit(int Limit);
 	~TradesLimit(){};
 };
 
 TradesLimit::TradesLimit(void){}
 
-TradesLimit::TradesLimit(int value)
+TradesLimit::TradesLimit(int Limit)
 {
-	Value = value;
+	this.limit = Limit;
+	this.current_quantity = 0;
 }
 
-void TradesLimit::on_order(MqlTradeTransaction &trans)
+void TradesLimit::on_deal(Deal &deal)
 {	
-	HistorySelect(TimeCurrent() - 12*60*60, TimeCurrent());
-	int trades = HistoryDealsTotal() / 2;
+	if(deal.volume > 0 && !context.is_positioned())
+		this.current_quantity += 1;
 	
-	if(trades >= Value)
-		context.daily_locked = true;
+	if(this.current_quantity >= this.limit)
+		context.lock_the_day(StringFormat("Trades limit: %d >= %d", current_quantity, limit));
+}
+
+void TradesLimit::on_daily_reset(void)
+{
+	this.current_quantity = 0;
 }

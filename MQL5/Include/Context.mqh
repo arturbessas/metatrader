@@ -14,6 +14,7 @@
 #include <Optimizer.mqh>
 #include <Object.mqh>
 #include <Basic.mqh>
+//#include <DateUtil.mqh>
 
 
 #define TIMEOUT 60
@@ -25,13 +26,24 @@ struct TickInfo
 	MqlDateTime time;
 };
 
+struct Deal
+{
+	double volume;
+	ENUM_DEAL_TYPE type;
+	datetime date_time;
+	string stock_code;
+	double price;
+	double profit;
+};
 
 class Node: public CObject
 {
 	public:
 	virtual void on_trade(void){};
 	virtual void on_order(MqlTradeTransaction &trans){};
+	virtual void on_deal(Deal &deal){};
 	virtual void on_exit(void){};
+	virtual void on_daily_reset(void){};
 	Node(void){};
 	~Node(){};
 };
@@ -62,13 +74,22 @@ class Context
 	CPositionInfo pos_info;
 	Optimizer *optimizer;
 	
+	// Event functions
 	void on_order(MqlTradeTransaction &trans);
+	void on_deal(MqlTradeTransaction &trans);
 	void on_trade(void);
 	void on_exit(void);
+	void on_daily_reset(void);
+	
+	// Trading functions
 	bool Buy(double volume, string comment);
 	bool Sell(double volume, string comment);
 	bool ClosePositionByTicket(ulong ticket, string comment);
 	bool ClosePositions(string comment);
+	
+	// Other functions
+	void add_node(Node *node, bool on_trade, bool on_deal);
+	void lock_the_day(string comment);
 	
 	string stock_code;
 	ulong magic_number;
@@ -81,16 +102,18 @@ class Context
 	TickInfo tick;
 	ulong pending_orders[];
 	Position position;
-	MqlDateTime now;
+	CHashSet<ulong> checked_deals;
+	datetime today;
 
 	ENUM_TIMEFRAMES periodicity;
 	
 	CArrayObj *on_trade_nodes;
 	CArrayObj *on_order_nodes;
+	CArrayObj *on_deal_nodes;
+	CArrayObj *all_nodes;
 	
 	
 	double current_price(void) {return tick.tick.bid;}
-	bool is_new_day(void) {return optimizer.is_new_day;}
 	bool is_positioned(void) {return position.volume != 0;}
 	bool is_bought(void) {return position.volume > 0;}
 	bool is_sold(void) {return position.volume < 0;}
@@ -98,7 +121,6 @@ class Context
 	double entry_price(void) {return position.entry_price;}
 	double number_of_stocks_to_trade(void) {return number_of_stocks;}
 	double average_price(void) {return position.average_price;}
-	datetime today(void) {return int(TimeCurrent() / (60 * 60 * 24)) * (60 * 60 * 24);}
 	
 	bool check_times(int h_ini, int m_ini, int h_end, int m_end);
 	int compare_time(MqlDateTime &mql_time, int hour, int min);
@@ -108,6 +130,7 @@ class Context
 	bool is_testing(void);
 	double get_daily_profit(void);
 	double get_position_price(ulong position_ticket);
+	
 
 	
 	Context(string stockCode, ulong magicNumber, ENUM_TIMEFRAMES Periodicity);
@@ -134,6 +157,7 @@ Context::Context(string stockCode, ulong magicNumber, ENUM_TIMEFRAMES Periodicit
 	last_candle_time = 0;
 	entries_locked = false;
 	daily_locked = false;
+	today = datetime("2000-01-01");
 	
 	// last price
 	ResetLastError();
@@ -146,6 +170,8 @@ Context::Context(string stockCode, ulong magicNumber, ENUM_TIMEFRAMES Periodicit
 	
 	on_trade_nodes = new CArrayObj;
 	on_order_nodes = new CArrayObj;
+	on_deal_nodes  = new CArrayObj;
+	all_nodes      = new CArrayObj;
 	
 	load_positions();
 	
@@ -169,30 +195,34 @@ void Context::load_positions(void)
    }
 }
 
+void Context::add_node(Node *node, bool on_trade, bool on_deal)
+{
+	this.all_nodes.Add(node);
+	if(on_trade)
+		this.on_trade_nodes.Add(node);
+	if(on_deal)
+		this.on_deal_nodes.Add(node);
+}
+
 void Context::on_exit(void)
 {
    delete optimizer;
-	// delete on trade nodes
-	for(int i = 0; i < on_trade_nodes.Total(); i++)
+	// delete all nodes
+	for(int i = 0; i < all_nodes.Total(); i++)
 	{
-		Node *node = on_trade_nodes.At(i);
+		Node *node = all_nodes.At(i);
 		node.on_exit();
 		delete node;
 	}
 	delete on_trade_nodes;
-	
-	// delete on order nodes
-	for(int i = 0; i < on_order_nodes.Total(); i++)
-	{
-		Node *node = on_order_nodes.At(i);
-		node.on_exit();
-		delete node;
-	}
-	delete on_order_nodes;	
+	delete on_order_nodes;
+	delete on_deal_nodes;
+	delete all_nodes;	
 }
 
 void Context::on_order(MqlTradeTransaction &trans)
 {
+	// TO DO: Migrate all modules to on deal function
    ulong order_ticket = trans.order;
    
    if(!HistoryOrderSelect(order_ticket) || HistoryOrderGetInteger(order_ticket, ORDER_MAGIC) != magic_number)
@@ -205,11 +235,58 @@ void Context::on_order(MqlTradeTransaction &trans)
 	}
 }
 
+void Context::on_deal(MqlTradeTransaction &trans)
+{
+   if(HistoryDealSelect(trans.deal) && !checked_deals.Contains(trans.deal) && HistoryDealGetDouble(trans.deal, DEAL_VOLUME) > 0)
+   {           
+      checked_deals.Add(trans.deal);
+      
+      Deal deal;
+      deal.stock_code = HistoryDealGetString(trans.deal, DEAL_SYMBOL);
+      deal.date_time  = (datetime)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+      deal.type       = (ENUM_DEAL_TYPE)HistoryDealGetInteger(trans.deal, DEAL_TYPE);
+      deal.volume     = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
+      deal.price      = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
+      deal.profit     = HistoryDealGetDouble(trans.deal, DEAL_PROFIT);
+      
+      for(int i = 0; i < on_deal_nodes.Total(); i++)
+		{
+			Node *node = on_deal_nodes.At(i);
+			node.on_deal(deal);
+		}
+   }
+}
+
+void Context::lock_the_day(string comment)
+{
+	this.daily_locked = true;
+	logger.info(StringFormat("Daily locked: %s", comment));
+}
+
+void Context::on_daily_reset(void)
+{
+	this.today = DatetimeToDate(TimeCurrent());
+	this.daily_locked = false;
+	
+	for(int i = 0; i < all_nodes.Total(); i++)
+	{
+		Node *node = all_nodes.At(i);
+		node.on_daily_reset();
+	}
+	
+	logger.info(StringFormat("All set for a new day: %s", TimeToString(today, TIME_DATE)));
+}
 
 void Context::on_trade()
 {
    if(!valid_strategy)
 		ExpertRemove();
+	
+	// check if it is a new day
+	if(DatetimeToDate(TimeCurrent()) > this.today)
+	{
+		this.on_daily_reset();
+	}
 		
    // check for order updates
    if (ArraySize(pending_orders) > 0)
@@ -221,13 +298,9 @@ void Context::on_trade()
 	   logger.error("Tick error: " + IntegerToString(GetLastError()));
 	   return;
 	}
-	TimeToStruct(tick.tick.time, now);
 	
 	//optmization checks
 	optimizer.on_trade();
-	
-	if(optimizer.is_new_day)
-		daily_locked = false;	
 
    int size = on_trade_nodes.Total();
 	for(int i = 0; i < size; i++)
@@ -470,6 +543,10 @@ double Context::get_daily_profit(void)
 
 bool Context::Buy(double volume, string comment="")
 {
+	// check entries locked
+	if(!this.is_positioned() && daily_locked)
+		return false;
+		
    if (ArraySize(pending_orders) > 0)
    {
       logger.info("Blocking order due to pending orders. New order reason: " + comment);
@@ -501,6 +578,10 @@ bool Context::Buy(double volume, string comment="")
 
 bool Context::Sell(double volume, string comment="")
 {
+	// check entries locked
+	if(!this.is_positioned() && daily_locked)
+		return false;
+		
    if (ArraySize(pending_orders) > 0)
    {
       logger.info("Blocking order due to pending order. New order reason: " + comment);

@@ -1,6 +1,6 @@
 //+------------------------------------------------------------------+
 //|                                         MarketProfile Canvas.mq5 |
-//|                              Copyright 2009-2024, MetaQuotes Ltd |
+//|                              Copyright 2009-2025, MetaQuotes Ltd |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2022, MetaQuotes Ltd."
@@ -257,8 +257,8 @@ void CMarketProfile::CMarketProfile(string prefix, datetime time1, datetime time
    m_time2(time2),
    m_high(high),
    m_low(low),
-   m_vert_scale(NULL),
-   m_hor_scale(NULL)
+   m_vert_scale(0.0),
+   m_hor_scale(0.0)
   {
    ArrayCopy(m_bars, bars);
    m_name=ExtPrefixUniq+"_MP_"+TimeToString(time1, TIME_DATE);
